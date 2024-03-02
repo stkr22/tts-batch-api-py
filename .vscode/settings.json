@@ -18,5 +18,15 @@
         "tests"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "cSpell.words": [
+        "dtype",
+        "fastapi",
+        "frombuffer",
+        "levelname",
+        "ndim",
+        "pydantic",
+        "samplerate",
+        "tobytes"
+    ]
 }

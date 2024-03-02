@@ -5,13 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python Debugger: FastAPI",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "env": {"LOG_LEVEL": "DEBUG"}
+            "module": "uvicorn",
+            "args": [
+                "tts_batch_api.main:app"
+            ],
+            "jinja": true,
+            "env": {"LOG_LEVEL": "DEBUG", "ALLOWED_USER_TOKEN": "DEBUG"}
         }
     ]
 }
