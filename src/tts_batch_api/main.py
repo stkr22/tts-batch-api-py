@@ -32,14 +32,14 @@ class AudioData(BaseModel):
 
 class SynthesizeRequest(BaseModel):
     text: str
-    samplerate: int = 16000
+    samplerate: int = 16000  # this only has the effect that blocksize is adjusted / silence is added. No resampling is done.
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Load the ML model
     ml_models["voice_engine"] = init_voice.initialize_voice_engine(
-        os.getenv("TTS_MODEL", "en_US-amy-medium"),
+        os.getenv("TTS_MODEL", "en_US-kathleen-low"),
     )
     yield
     # Clean up the ML models and release the resources
@@ -73,13 +73,12 @@ async def synthesize_speech(
         raise HTTPException(
             status_code=400, detail="Generation Error, no bytes generated."
         )
-    reshaped_chunk = audio_frames.reshape(-1, 1)
-    if (remainder := reshaped_chunk.shape[0] % synthesize_request.samplerate) != 0:
-        lengths = [(0, 0)] * reshaped_chunk.ndim
+    if (remainder := audio_frames.shape[0] % synthesize_request.samplerate) != 0:
+        lengths = [(0, 0)] * audio_frames.ndim
         padding_needed = synthesize_request.samplerate - remainder
         lengths[0] = (0, padding_needed)
-        reshaped_chunk = np.pad(reshaped_chunk, lengths, "constant")
-    audio_np = reshaped_chunk.tobytes()
+        audio_frames = np.pad(audio_frames, lengths, "constant")
+    audio_np = audio_frames.tobytes()
     base64_bytes = base64.b64encode(audio_np)
     base64_string = base64_bytes.decode("utf-8")
 
