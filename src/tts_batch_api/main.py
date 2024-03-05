@@ -73,11 +73,6 @@ async def synthesize_speech(
         raise HTTPException(
             status_code=400, detail="Generation Error, no bytes generated."
         )
-    if (remainder := audio_frames.shape[0] % synthesize_request.samplerate) != 0:
-        lengths = [(0, 0)] * audio_frames.ndim
-        padding_needed = synthesize_request.samplerate - remainder
-        lengths[0] = (0, padding_needed)
-        audio_frames = np.pad(audio_frames, lengths, "constant")
     audio_np = audio_frames.tobytes()
     base64_bytes = base64.b64encode(audio_np)
     base64_string = base64_bytes.decode("utf-8")
