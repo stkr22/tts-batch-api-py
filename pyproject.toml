@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tts-batch-api"
-version = "2.0.0"
+version = "2.1.0"
 description = "The API offer simple text to speach functionality."
 authors = ["stkr22 <stkr22@github.com>"]
 readme = "README.md"
