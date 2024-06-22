@@ -1,13 +1,12 @@
-import base64
 import logging
 import os
 import sys
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-import numpy as np
 import piper  # ignore
 from fastapi import FastAPI, Header, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from tts_batch_api import initialize_voice_engine as init_voice
@@ -25,14 +24,8 @@ logger = logging.getLogger(__name__)
 ml_models: dict[str, piper.PiperVoice] = {}
 
 
-class AudioData(BaseModel):
-    audio_base64: str
-    dtype: str = "float32"
-
-
 class SynthesizeRequest(BaseModel):
     text: str
-    samplerate: int = 16000  # this only has the effect that blocksize is adjusted / silence is added. No resampling is done.
 
 
 @asynccontextmanager
@@ -58,23 +51,18 @@ async def health() -> dict:
 async def synthesize_speech(
     synthesize_request: SynthesizeRequest,
     user_token: Annotated[str | None, Header()] = None,
-) -> AudioData:
+) -> StreamingResponse:
     voice_engine = ml_models["voice_engine"]
     if user_token != os.environ["ALLOWED_USER_TOKEN"]:
         raise HTTPException(status_code=403)
-    audio_frames = None
-    for audio_byte in voice_engine.synthesize_stream_raw(synthesize_request.text):
-        n_array = np.frombuffer(audio_byte, dtype=np.int16)
-        if audio_frames is None:
-            audio_frames = n_array
-        else:
-            audio_frames = np.concatenate((audio_frames, n_array), axis=0)
-    if audio_frames is None:
-        raise HTTPException(
-            status_code=400, detail="Generation Error, no bytes generated."
-        )
-    audio_np = audio_frames.tobytes()
-    base64_bytes = base64.b64encode(audio_np)
-    base64_string = base64_bytes.decode("utf-8")
 
-    return AudioData(audio_base64=base64_string, dtype="int16")
+    async def audio_streamer():
+        try:
+            for audio_byte in voice_engine.synthesize_stream_raw(
+                synthesize_request.text
+            ):
+                yield audio_byte  # Directly yield the bytes received
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error during streaming: {e}")
+
+    return StreamingResponse(audio_streamer(), media_type="audio/wav")
