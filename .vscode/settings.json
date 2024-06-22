@@ -28,5 +28,6 @@
         "pydantic",
         "samplerate",
         "tobytes"
-    ]
+    ],
+    "remote.localPortHost": "allInterfaces"
 }

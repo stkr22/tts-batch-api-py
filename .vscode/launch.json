@@ -10,7 +10,8 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "tts_batch_api.main:app"
+                "tts_batch_api.main:app",
+                "--port", "8181"
             ],
             "jinja": true,
             "env": {"LOG_LEVEL": "DEBUG", "ALLOWED_USER_TOKEN": "DEBUG"}
