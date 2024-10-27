@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "tts-batch-api"
-version = "2.3.0"
+version = "2.3.1"
 description = "The API offer simple text to speach functionality based on PIPER."
 authors = ["stkr22 <stkr22@github.com>"]
 readme = "README.md"

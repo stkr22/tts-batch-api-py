@@ -1,6 +1,4 @@
-import logging
 import os
-import sys
 from contextlib import asynccontextmanager
 from typing import Annotated
 
@@ -9,16 +7,6 @@ from fastapi import FastAPI, Header, HTTPException, responses
 from pydantic import BaseModel
 
 from tts_batch_api import initialize_voice_engine as init_voice
-
-# Configure logging
-log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-logging.basicConfig(
-    level=log_level,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    stream=sys.stdout,
-)
-
-logger = logging.getLogger(__name__)
 
 ml_models: dict[str, piper.PiperVoice] = {}
 
