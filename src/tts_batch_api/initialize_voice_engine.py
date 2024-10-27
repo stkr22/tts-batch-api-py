@@ -2,7 +2,7 @@ import os
 import pathlib
 from typing import Any
 
-import piper  # ignore
+import piper
 from piper import download as piper_download
 
 

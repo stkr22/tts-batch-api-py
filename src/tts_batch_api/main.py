@@ -4,7 +4,7 @@ import sys
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-import piper  # ignore
+import piper
 from fastapi import FastAPI, Header, HTTPException, responses
 from pydantic import BaseModel
 

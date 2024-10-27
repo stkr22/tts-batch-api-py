@@ -1,5 +1,5 @@
 {
-	"name": "tts-batch-api-py-dev-environment",
+	"name": "tts-batch-api-dev-environment",
 	"image": "mcr.microsoft.com/devcontainers/python:3.11",
 	"runArgs": [
 		"--userns=keep-id"
@@ -14,7 +14,9 @@
 				"charliermarsh.ruff",
 				"ms-python.mypy-type-checker",
 				"tamasfe.even-better-toml",
-				"donjayamanne.githistory"
+				"github.vscode-github-actions",
+				"oderwat.indent-rainbow",
+				"mhutchie.git-graph"
 			]
 		}
 	},
@@ -22,6 +24,6 @@
 		"HOME": "/home/vscode",
 		"POETRY_VIRTUALENVS_IN_PROJECT": "true"
 	},
-	"postCreateCommand": "pip install --user poetry pre-commit && pre-commit install && poetry install"
+	"postCreateCommand": "pip install --user poetry pre-commit && poetry install && pre-commit install"
 
 }

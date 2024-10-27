@@ -1,14 +1,17 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "tts-batch-api"
-version = "2.2.1"
-description = "The API offer simple text to speach functionality."
+version = "2.3.0"
+description = "The API offer simple text to speach functionality based on PIPER."
 authors = ["stkr22 <stkr22@github.com>"]
 readme = "README.md"
-license = "MIT"
-include = ["src"]
+license = "GNU General Public License v3.0"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.12"
 piper-tts = "^1.2.0"
 fastapi = "^0.111.0"
 uvicorn = "^0.30.1"
@@ -16,18 +19,20 @@ numpy = "^1.26.4"
 onnxruntime = "1.17.1"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.4.10"
-mypy = "^1.10.0"
-pytest = "^8.2.2"
+ruff = "^0.6.8"
+mypy = "^1.11.2"
+pytest = "^8.3.3"
 httpx = "^0.27.0"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[[tool.mypy.overrides]]
+module = [
+    "piper.*"
+]
+ignore_missing_imports = true
 
 [tool.ruff]
 target-version = "py311"
-line-length = 88
+line-length = 120
 indent-width = 4
 
 [tool.ruff.lint]
