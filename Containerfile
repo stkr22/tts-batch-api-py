@@ -3,9 +3,11 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED 1
 
 # Create a non-root user named 'pythonuser' and an /app folder owned by that user
-RUN useradd -m pythonuser \
+RUN useradd -D pythonuser \
     && mkdir -p /app \
     && chown pythonuser:pythonuser /app
+
+ENV PATH="/home/pythonuser/.local/bin:${PATH}"
 
 # Set the working directory to /app
 WORKDIR /app
@@ -21,7 +23,7 @@ ARG WHEEL_FILE=my_wheel.whl
 
 # Copy only the wheel file and install it
 COPY dist/${WHEEL_FILE} /app/${WHEEL_FILE}
-RUN pip install /app/${WHEEL_FILE} \
+RUN pip install --user /app/${WHEEL_FILE} \
     && rm /app/${WHEEL_FILE}
 
 # Expose port 8080
