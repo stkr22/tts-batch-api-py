@@ -3,7 +3,7 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED 1
 
 # Create a non-root user named 'pythonuser' and an /app folder owned by that user
-RUN useradd -D pythonuser \
+RUN useradd -m -d /home/pythonuser pythonuser \
     && mkdir -p /app \
     && chown pythonuser:pythonuser /app
 
