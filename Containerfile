@@ -20,8 +20,9 @@ USER pythonuser
 ARG WHEEL_FILE=my_wheel.whl
 
 # Copy only the wheel file and install it
-COPY dist/${WHEEL_FILE} /tmp/${WHEEL_FILE}
-RUN pip install /tmp/${WHEEL_FILE} && rm /tmp/${WHEEL_FILE}
+COPY dist/${WHEEL_FILE} /app/${WHEEL_FILE}
+RUN pip install /app/${WHEEL_FILE} \
+    && rm /app/${WHEEL_FILE}
 
 # Expose port 8080
 EXPOSE 8080
