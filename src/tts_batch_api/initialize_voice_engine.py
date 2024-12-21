@@ -14,21 +14,22 @@ def get_writable_directory() -> pathlib.Path:
     if os.access(app_dir, os.W_OK):
         logger.info("Using writable application directory: %s", app_dir)
         return app_dir
-    else:
-        home_directory = pathlib.Path.home()
-        logger.warning(
-            "Application directory %s is not writable; defaulting to home directory: %s", app_dir, home_directory
-        )
-        return home_directory
+    home_directory = pathlib.Path.home()
+    logger.warning(
+        "Application directory %s is not writable; defaulting to home directory: %s", app_dir, home_directory
+    )
+    return home_directory
 
 
 def initialize_voice_engine(model: str) -> piper.PiperVoice:
     """Initialize the voice engine, downloading the model if necessary."""
-    download_dir = get_writable_directory()
-    data_dir = [download_dir]
-    model_path = pathlib.Path(model)
+    app_dir = pathlib.Path(os.getenv("APP_DIR", "/app"))
+    model_path = app_dir / model
+    model_config_path = app_dir / f"{model}.json"
 
-    if not model_path.exists():
+    if not model_path.exists() and not model_config_path.exists():
+        download_dir = get_writable_directory()
+        data_dir = [download_dir]
         logger.info("Model %s not found locally. Attempting to download.", model)
 
         # Load voice information
@@ -47,10 +48,10 @@ def initialize_voice_engine(model: str) -> piper.PiperVoice:
 
         # Download and verify the specified model
         piper_download.ensure_voice_exists(model, data_dir, download_dir, voices_info)
-        model, config = piper_download.find_voice(model, data_dir)
+        model_path, model_config_path = piper_download.find_voice(model, data_dir)
         logger.info("Model %s downloaded and located successfully.", model)
     else:
         logger.info("Model %s found locally at %s.", model, model_path)
 
     logger.info("Loading Piper voice model from %s with config.", model)
-    return piper.PiperVoice.load(model, config_path=config)
+    return piper.PiperVoice.load(model_path, config_path=model_config_path)

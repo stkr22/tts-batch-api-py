@@ -16,10 +16,11 @@ class SynthesizeRequest(BaseModel):
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):  # noqa: ARG001
     # Load the ML model
+    model_name = os.getenv("TTS_MODEL", "en_US-kathleen-low")
     ml_models["voice_engine"] = init_voice.initialize_voice_engine(
-        os.getenv("TTS_MODEL", "en_US-kathleen-low"),
+        f"{model_name}.onnx",
     )
     yield
     # Clean up the ML models and release the resources

@@ -1,30 +1,34 @@
 FROM python:3.11-slim
 
-ENV PYTHONUNBUFFERED 1
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Create a non-root user named 'pythonuser' and an /app folder owned by that user
-RUN useradd -m -d /home/pythonuser pythonuser \
-    && mkdir -p /app \
-    && chown pythonuser:pythonuser /app
+# Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser -s /sbin/nologin -M appuser \
+    && mkdir -p /app /app/config \
+    && chown -R appuser:appuser /app
 
-ENV PATH="/home/pythonuser/.local/bin:${PATH}"
-
-# Set the working directory to /app
+# Set working directory
 WORKDIR /app
 
-# Copy the 'assets' folder contents to /app with the correct ownership
-COPY --chown=pythonuser:pythonuser assets/ /app
-
-# Set the user to 'pythonuser'
-USER pythonuser
-
-# Argument for the wheel file name
+# Copy and install the wheel file
 ARG WHEEL_FILE=my_wheel.whl
+COPY dist/${WHEEL_FILE} /tmp/${WHEEL_FILE}
 
-# Copy only the wheel file and install it
-COPY dist/${WHEEL_FILE} /app/${WHEEL_FILE}
-RUN pip install --user /app/${WHEEL_FILE} \
-    && rm /app/${WHEEL_FILE}
+# Install dependencies and clean up in one layer
+RUN pip install --no-cache-dir /tmp/${WHEEL_FILE} \
+    && rm -rf /tmp/* \
+    && rm -rf /var/cache/apt/* \
+    && rm -rf /root/.cache/*
+
+# Copy the 'assets' folder contents to /app with the correct ownership
+COPY --chown=appuser:appuser assets/ /app
+
+# Set the user to 'appuser'
+USER appuser
 
 # Expose port 8080
 EXPOSE 8080
