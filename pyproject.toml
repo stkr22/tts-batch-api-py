@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tts-batch-api"
-version = "2.3.2"
+version = "3.0.0"
 description = "The API offer simple text to speach functionality based on PIPER."
 authors = [
     { name = "stkr22", email = "stkr22@github.com" }
@@ -19,6 +19,7 @@ dependencies = [
     "uvicorn>=0.30.1",
     "numpy>=1.26.4",
     "onnxruntime==1.17.1",
+    "redis>=5.2.1",
 ]
 
 keywords = []
@@ -36,6 +37,7 @@ dev = [
     "pytest>=8.3.3",
     "pytest-cov>=6.0.0",
     "httpx==0.27.0",
+    "types-redis>=4.6.0.20241004",
 ]
 
 [[tool.mypy.overrides]]

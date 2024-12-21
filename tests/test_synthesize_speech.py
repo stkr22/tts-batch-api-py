@@ -10,6 +10,7 @@ from tts_batch_api import main
 def set_env_vars():
     os.environ["ALLOWED_USER_TOKEN"] = "DEBUG"
     os.environ["APP_DIR"] = "./assets"
+    os.environ["ENABLE_CACHE"] = "false"
     yield
     # Optionally reset or delete the variables after tests
     os.environ.pop("ALLOWED_USER_TOKEN", None)
