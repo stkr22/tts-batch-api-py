@@ -1,28 +1,42 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[project]
 name = "tts-batch-api"
 version = "2.3.1"
 description = "The API offer simple text to speach functionality based on PIPER."
-authors = ["stkr22 <stkr22@github.com>"]
+authors = [
+    { name = "stkr22", email = "stkr22@github.com" }
+]
 readme = "README.md"
-license = "GNU General Public License v3.0"
+license = { text = "GNU General Public License v3.0" }
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.12"
-piper-tts = "^1.2.0"
-fastapi = "^0.111.0"
-uvicorn = "^0.30.1"
-numpy = "^1.26.4"
-onnxruntime = "1.17.1"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "piper-tts>=1.2.0",
+    "fastapi>=0.111.0",
+    "uvicorn>=0.30.1",
+    "numpy>=1.26.4",
+    "onnxruntime==1.17.1",
+]
 
-[tool.poetry.group.dev.dependencies]
-ruff = "^0.6.8"
-mypy = "^1.11.2"
-pytest = "^8.3.3"
-httpx = "^0.27.0"
+keywords = []
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Topic :: Home Automation",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "mypy>=1.11.0",
+    "pytest>=8.3.3",
+    "pytest-cov>=6.0.0",
+    "httpx==0.27.0",
+]
 
 [[tool.mypy.overrides]]
 module = [
@@ -36,5 +50,39 @@ line-length = 120
 indent-width = 4
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "I", "UP"]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "N",    # pep8-naming
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "RET",  # flake8-return
+    "SIM",  # flake8-simplify
+    "ARG",  # flake8-unused-arguments
+    "PTH",  # flake8-use-pathlib
+    "ERA",  # eradicate
+]
 ignore = ["E203"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra -q"
+
+[tool.coverage.run]
+source = ["tts_batch_api"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+]
