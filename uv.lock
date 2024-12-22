@@ -25,6 +25,49 @@ wheels = [
 ]
 
 [[package]]
+name = "app"
+version = "3.0.1"
+source = { editable = "." }
+dependencies = [
+    { name = "fastapi", extra = ["standard"] },
+    { name = "numpy" },
+    { name = "onnxruntime" },
+    { name = "piper-tts" },
+    { name = "redis" },
+    { name = "uvicorn" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "httpx" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "types-redis" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", extras = ["standard"], specifier = ">=0.113.0,<0.114.0" },
+    { name = "numpy", specifier = ">=1.26.4,<2.0.0" },
+    { name = "onnxruntime", specifier = "==1.17.1" },
+    { name = "piper-tts", specifier = ">=1.2.0,<2.0.0" },
+    { name = "redis", specifier = ">=5.2.1,<6.0.0" },
+    { name = "uvicorn", specifier = ">=0.30.1,<1.0.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "httpx", specifier = ">=0.27.0,<1.0.0" },
+    { name = "mypy", specifier = ">=1.11.0,<2.0.0" },
+    { name = "pytest", specifier = ">=8.3.3,<9.0.0" },
+    { name = "pytest-cov", specifier = ">=6.0.0,<7.0.0" },
+    { name = "ruff", specifier = ">=0.8.0,<1.0.0" },
+    { name = "types-redis", specifier = ">=4.6.0.20241004,<5.0.0" },
+]
+
+[[package]]
 name = "async-timeout"
 version = "5.0.1"
 source = { registry = "https://pypi.org/simple" }
@@ -739,49 +782,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/72/6f/fa64ef058ac1446a1e51110c375339b3ec6be245af9d14c87c4a6412dd32/tomli-2.2.1-cp311-cp311-win32.whl", hash = "sha256:465af0e0875402f1d226519c9904f37254b3045fc5084697cefb9bdde1ff99ff", size = 98310 },
     { url = "https://files.pythonhosted.org/packages/6a/1c/4a2dcde4a51b81be3530565e92eda625d94dafb46dbeb15069df4caffc34/tomli-2.2.1-cp311-cp311-win_amd64.whl", hash = "sha256:2d0f2fdd22b02c6d81637a3c95f8cd77f995846af7414c5c4b8d0545afa1bc4b", size = 108309 },
     { url = "https://files.pythonhosted.org/packages/6e/c2/61d3e0f47e2b74ef40a68b9e6ad5984f6241a942f7cd3bbfbdbd03861ea9/tomli-2.2.1-py3-none-any.whl", hash = "sha256:cb55c73c5f4408779d0cf3eef9f762b9c9f147a77de7b258bef0a5628adc85cc", size = 14257 },
-]
-
-[[package]]
-name = "tts-batch-api"
-version = "3.0.0"
-source = { editable = "." }
-dependencies = [
-    { name = "fastapi", extra = ["standard"] },
-    { name = "numpy" },
-    { name = "onnxruntime" },
-    { name = "piper-tts" },
-    { name = "redis" },
-    { name = "uvicorn" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "httpx" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-    { name = "types-redis" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "fastapi", extras = ["standard"], specifier = ">=0.113.0,<0.114.0" },
-    { name = "numpy", specifier = ">=1.26.4,<2.0.0" },
-    { name = "onnxruntime", specifier = "==1.17.1" },
-    { name = "piper-tts", specifier = ">=1.2.0,<2.0.0" },
-    { name = "redis", specifier = ">=5.2.1,<6.0.0" },
-    { name = "uvicorn", specifier = ">=0.30.1,<1.0.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "httpx", specifier = ">=0.27.0,<1.0.0" },
-    { name = "mypy", specifier = ">=1.11.0,<2.0.0" },
-    { name = "pytest", specifier = ">=8.3.3,<9.0.0" },
-    { name = "pytest-cov", specifier = ">=6.0.0,<7.0.0" },
-    { name = "ruff", specifier = ">=0.8.0,<1.0.0" },
-    { name = "types-redis", specifier = ">=4.6.0.20241004,<5.0.0" },
 ]
 
 [[package]]

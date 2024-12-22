@@ -3,13 +3,13 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 
-from tts_batch_api import main
+from app import main
 
 
 @pytest.fixture(autouse=True)
 def set_env_vars():
     os.environ["ALLOWED_USER_TOKEN"] = "DEBUG"
-    os.environ["APP_DIR"] = "./assets"
+    os.environ["ASSETS_DIR"] = "./assets"
     os.environ["ENABLE_CACHE"] = "false"
     yield
     # Optionally reset or delete the variables after tests

@@ -7,5 +7,5 @@ copyright_license: GNU General Public License v3.0
 project_description: The API offer simple text to speach functionality based on PIPER.
 project_name: TTS Batch API
 python_package_distribution_name: tts-batch-api
-python_package_import_name: tts_batch_api
+python_package_import_name: app
 version: 2.2.1

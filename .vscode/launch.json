@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "tts_batch_api.main:app",
+                "app.main:app",
                 "--port", "8181"
             ],
             "jinja": true,

@@ -10,10 +10,7 @@ from fastapi import FastAPI, Header, HTTPException, responses
 from pydantic import BaseModel
 from redis import asyncio as aioredis
 
-from tts_batch_api import initialize_voice_engine as init_voice
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+from app import initialize_voice_engine as init_voice
 
 
 @dataclass
@@ -79,7 +76,7 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
     global ml_models, cache
 
     ml_models["voice_engine"] = init_voice.initialize_voice_engine(
-        os.getenv("TTS_MODEL", "en_US-kathleen-low"),
+        os.getenv("TTS_MODEL", "en_US-kathleen-low.onnx"),
     )
     redis_pw = os.getenv("REDIS_PASSWORD")
     redis_url = "redis://"

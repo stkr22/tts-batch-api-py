@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "tts-batch-api"
-version = "3.0.1"
+name = "app"
+version = "4.0.0"
 description = "The API offer simple text to speach functionality based on PIPER."
 authors = [
     { name = "stkr22", email = "stkr22@github.com" }
@@ -77,7 +77,7 @@ python_files = ["test_*.py"]
 addopts = "-ra -q"
 
 [tool.coverage.run]
-source = ["tts_batch_api"]
+source = ["app"]
 branch = true
 
 [tool.coverage.report]

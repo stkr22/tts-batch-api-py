@@ -5,27 +5,27 @@ from typing import Any
 import piper
 from piper import download as piper_download
 
-from tts_batch_api.logger import logger
+from app.logger import logger
 
 
 def get_writable_directory() -> pathlib.Path:
     """Determine a writable directory for storing model data."""
-    app_dir = pathlib.Path(os.getenv("APP_DIR", "/app"))
-    if os.access(app_dir, os.W_OK):
-        logger.info("Using writable application directory: %s", app_dir)
-        return app_dir
+    assets_dir = pathlib.Path(os.getenv("ASSETS_DIR", "/app/assets"))
+    if os.access(assets_dir, os.W_OK):
+        logger.info("Using writable application directory: %s", assets_dir)
+        return assets_dir
     home_directory = pathlib.Path.home()
     logger.warning(
-        "Application directory %s is not writable; defaulting to home directory: %s", app_dir, home_directory
+        "Application directory %s is not writable; defaulting to home directory: %s", assets_dir, home_directory
     )
     return home_directory
 
 
 def initialize_voice_engine(model: str) -> piper.PiperVoice:
     """Initialize the voice engine, downloading the model if necessary."""
-    app_dir = pathlib.Path(os.getenv("APP_DIR", "/app"))
-    model_path = app_dir / model
-    model_config_path = app_dir / f"{model}.json"
+    assets_dir = pathlib.Path(os.getenv("ASSETS_DIR", "/app/assets"))
+    model_path = assets_dir / model
+    model_config_path = assets_dir / f"{model}.json"
 
     if not model_path.exists() and not model_config_path.exists():
         download_dir = get_writable_directory()
