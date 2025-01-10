@@ -37,7 +37,7 @@ class TTSCache:
             return None
 
         cache_key = self._generate_cache_key(text, voice_id)
-        cached_data = await self.redis.get(cache_key)
+        cached_data: bytes = await self.redis.get(cache_key)  # type: ignore
 
         if cached_data:
             self.logger.info("Cache HIT for text: %s (key: %s)", text[:50], cache_key)
