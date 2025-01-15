@@ -16,6 +16,7 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+<<<<<<< before updating
     "cSpell.words": [
         "dtype",
         "fastapi",
@@ -27,4 +28,9 @@
         "tobytes"
     ],
     "remote.localPortHost": "allInterfaces"
+=======
+    "cSpell.files": [
+        "src"
+    ]
+>>>>>>> after updating
 }
