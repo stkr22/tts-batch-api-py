@@ -1,5 +1,5 @@
 # Build stage: Python 3.11.11-bookworm
-FROM docker.io/library/python@sha256:08471c63c5fdf2644adc142a7fa8d0290eb405cda14c473fbe5b4cd0933af601 as build-python
+FROM docker.io/library/python:3.11.11-bookworm@sha256:08471c63c5fdf2644adc142a7fa8d0290eb405cda14c473fbe5b4cd0933af601 as build-python
 
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
@@ -13,7 +13,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.5.20 /uv /uvx /bin/
 WORKDIR /app
 
 # Copy the application into the container.
-COPY pyproject.toml README.md uv.lock /app
+COPY pyproject.toml README.md uv.lock /app/
 COPY assets /app/assets
 COPY app /app/app
 
@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/root/.cache \
         --group prod
 
 # runtime stage: Python 3.11.11-slim-bookworm
-FROM docker.io/library/python@sha256:08471c63c5fdf2644adc142a7fa8d0290eb405cda14c473fbe5b4cd0933af601
+FROM docker.io/library/python:3.11.11-slim-bookworm@sha256:08471c63c5fdf2644adc142a7fa8d0290eb405cda14c473fbe5b4cd0933af601
 
 ENV PYTHONUNBUFFERED=1
 
