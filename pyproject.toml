@@ -24,6 +24,8 @@ dependencies = [
 keywords = []
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Programming Language :: Python",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Topic :: Home Automation",
