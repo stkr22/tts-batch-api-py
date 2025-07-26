@@ -15,10 +15,10 @@ WORKDIR /app
 # Copy dependency files
 COPY pyproject.toml uv.lock README.md ./
 
-# Install dependencies only
+# Install dependencies only (excluding the current package)
 RUN --mount=type=cache,target=/root/.cache \
     uv venv && \
-    uv sync --frozen --no-dev
+    uv sync --frozen --no-dev --no-install-project
 
 # Runtime stage: Python 3.12.8-slim-bookworm
 FROM docker.io/library/python:3.12.8-slim-bookworm@sha256:10f3aaab98db50cba827d3b33a91f39dc9ec2d02ca9b85cbc5008220d07b17f3
