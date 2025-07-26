@@ -1,5 +1,5 @@
-# Build stage: Python 3.11.11-bookworm
-FROM docker.io/library/python:3.11.11-bookworm@sha256:4ca910a51a1a474e5d95aa52455331b2a94272eeae3c498be1ad7a2ff9b00bf3 as build-python
+# Build stage: Python 3.12.8-bookworm
+FROM docker.io/library/python:3.12.8-bookworm@sha256:68ca65265c466f4b64f8ddab669e13bcba8d4ba77ec4c26658d36f2b9d1b1cad as build-python
 
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
@@ -7,25 +7,21 @@ ENV UV_LINK_MODE=copy \
     PYTHONUNBUFFERED=1
 
 # Install uv.
-COPY --from=ghcr.io/astral-sh/uv:0.5.20@sha256:a8d9b557b6cd6ede1842b0e03cd7ac26870e2c6b4eea4e10dab67cbd3145f8d9 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.5.21@sha256:a8d9b557b6cd6ede1842b0e03cd7ac26870e2c6b4eea4e10dab67cbd3145f8d9 /uv /uvx /bin/
 
 # Set working directory
 WORKDIR /app
-
-# Copy the application into the container.
-COPY pyproject.toml README.md uv.lock /app/
 COPY assets /app/assets
-COPY app /app/app
+
+# Copy dependencies and pre-built wheel
+COPY dist/*.whl /app/dist/
 
 RUN --mount=type=cache,target=/root/.cache \
-    cd /app && \
-    uv sync \
-        --frozen \
-        --no-group dev \
-        --group prod
+    uv venv && \
+    uv pip install dist/*.whl
 
-# runtime stage: Python 3.11.11-slim-bookworm
-FROM docker.io/library/python:3.11.11-slim-bookworm@sha256:081075da77b2b55c23c088251026fb69a7b2bf92471e491ff5fd75c192fd38e5
+# runtime stage: Python 3.12.8-slim-bookworm
+FROM docker.io/library/python:3.12.8-slim-bookworm@sha256:10f3aaab98db50cba827d3b33a91f39dc9ec2d02ca9b85cbc5008220d07b17f3
 
 ENV PYTHONUNBUFFERED=1
 
@@ -44,4 +40,4 @@ USER appuser
 EXPOSE 8080
 
 # Start the application as the non-root user
-CMD ["fastapi", "run", "app/main.py", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["fastapi", "run", "app.main", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080"]
