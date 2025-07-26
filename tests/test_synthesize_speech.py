@@ -5,6 +5,9 @@ from fastapi.testclient import TestClient
 
 from app import main
 
+# Constants
+HTTP_OK = 200
+
 
 @pytest.fixture(autouse=True)
 def set_env_vars():
@@ -23,4 +26,4 @@ def test_synthesize_speech():
             headers={"user-token": "DEBUG"},
             json={"samplerate": 16000, "text": "Hello!"},
         )
-        assert response.status_code == 200, "HTTP Code should be 200"
+        assert response.status_code == HTTP_OK, "HTTP Code should be 200"

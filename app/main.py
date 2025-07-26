@@ -7,10 +7,11 @@ from typing import Annotated
 
 import piper
 from fastapi import FastAPI, Header, HTTPException, responses
+from piper import SynthesisConfig
 from pydantic import BaseModel
 from redis import asyncio as aioredis
 
-from app import initialize_voice_engine as init_voice
+from . import initialize_voice_engine as init_voice
 
 
 @dataclass
@@ -73,7 +74,7 @@ cache: TTSCache | None = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # noqa: ARG001
-    global ml_models, cache
+    global cache  # noqa: PLW0603
 
     ml_models["voice_engine"] = init_voice.initialize_voice_engine(
         os.getenv("TTS_MODEL", "en_US-kathleen-low.onnx"),
@@ -128,10 +129,13 @@ async def synthesize_speech(
 
     # If not in cache, generate new audio
     voice_engine = ml_models["voice_engine"]
-    audio_stream = voice_engine.synthesize_stream_raw(synthesize_request.text)
 
-    # Convert stream to bytes for caching
-    audio_data = b"".join(list(audio_stream))
+    # Use the new synthesis API with default config
+    synthesis_config = SynthesisConfig()
+    audio_chunks = voice_engine.synthesize(synthesize_request.text, synthesis_config)
+
+    # Convert audio chunks to bytes for caching
+    audio_data = b"".join(chunk.audio_int16_bytes for chunk in audio_chunks)
 
     # Store in cache asynchronously
     await cache.set(synthesize_request.text, audio_data)
