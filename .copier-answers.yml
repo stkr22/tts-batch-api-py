@@ -1,12 +1,15 @@
 # Changes here will be overwritten by Copier
-_commit: 1.1.7
+_commit: 1.4.4
 _src_path: https://github.com/stkr22/copier-python-project.git
 author_email: stkr22@github.com
 author_full_name: stkr22
 codeowner_username: '@stkr22'
 copyright_license: GNU General Public License v3.0
+github_repository_name: tts-batch-api-py
+github_username: stkr22
 project_description: The API offer simple text to speach functionality based on PIPER.
 project_name: TTS Batch API
+publish_to_pypi: false
 python_package_distribution_name: tts-batch-api
 python_package_import_name: app
-version: 2.2.1
+use_containers: true
