@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.3](https://github.com/stkr22/tts-batch-api-py/compare/v4.1.2...v4.1.3) (2025-07-26)
+
+
+### Bug Fixes
+
+* hotfixing cmd container ([6fa189b](https://github.com/stkr22/tts-batch-api-py/commit/6fa189b000ec9fa4f2b9c81c9439a17a7fda7083))
+
 ## [4.1.2](https://github.com/stkr22/tts-batch-api-py/compare/v4.1.1...v4.1.2) (2025-07-26)
 
 
