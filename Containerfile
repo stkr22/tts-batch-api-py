@@ -1,4 +1,4 @@
-# Build stage: Python 3.12.8-bookworm  
+# Build stage: Python 3.12.8-bookworm
 FROM docker.io/library/python:3.12.8-bookworm@sha256:68ca65265c466f4b64f8ddab669e13bcba8d4ba77ec4c26658d36f2b9d1b1cad as build-python
 
 ENV UV_LINK_MODE=copy \
@@ -46,4 +46,4 @@ USER appuser
 EXPOSE 8080
 
 # Start the application as the non-root user
-CMD ["fastapi", "run", "app/main.py:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["fastapi", "run", "app/main.py", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080"]
