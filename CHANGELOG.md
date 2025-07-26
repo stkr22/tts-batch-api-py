@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.1.2](https://github.com/stkr22/tts-batch-api-py/compare/v4.1.1...v4.1.2) (2025-07-26)
+
+
+### Bug Fixes
+
+* resolve container module path issue by copying source code directly [AI] ([1c03799](https://github.com/stkr22/tts-batch-api-py/commit/1c03799262b3b67679bb658d033b5e927508121d))
+* resolve container module path issue by copying source code directly [AI] ([34971b9](https://github.com/stkr22/tts-batch-api-py/commit/34971b99a88f385efb48d7fcd6345d4fd2fe8296))
+* resolve setuptools-scm version detection in container build [AI] ([5319317](https://github.com/stkr22/tts-batch-api-py/commit/5319317037231fe6a946593d6ba1b5995245fc68))
+
 ## [4.1.1](https://github.com/stkr22/tts-batch-api-py/compare/v4.1.0...v4.1.1) (2025-07-26)
 
 
