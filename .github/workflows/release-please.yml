@@ -1,9 +1,11 @@
 name: Release Please
 
 on:
-  push:
-    branches:
-      - main
+  # Temporarily disabled during commit history cleanup
+  # push:
+  #   branches:
+  #     - main
+  workflow_dispatch: # Manual trigger only
 
 jobs:
   release-please:

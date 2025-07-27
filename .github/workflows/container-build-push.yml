@@ -1,8 +1,10 @@
 name: Container Push
 
 on:
-  release:
-    types: [published]
+  # Temporarily disabled during commit history cleanup
+  # release:
+  #   types: [published]
+  workflow_dispatch: # Manual trigger only
 
 jobs:
   push:
