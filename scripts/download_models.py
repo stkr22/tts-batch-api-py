@@ -15,11 +15,11 @@ app_dir = pathlib.Path(__file__).parent.parent / "app"
 sys.path.insert(0, str(app_dir))
 
 try:
-    from config import ModelConfig
+    from config import ModelConfig  # type: ignore[import-not-found]
 except ImportError:
     # Fallback for container environment
     sys.path.insert(0, "/app")
-    from app.config import ModelConfig
+    from app.config import ModelConfig  # type: ignore[import-not-found]
 
 
 def main():
