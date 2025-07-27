@@ -83,14 +83,12 @@
 
 ## Project Structure
 
-- `app/`: Main TTS API application source
-  - `main.py`: FastAPI application with TTS endpoints and caching
-  - `initialize_voice_engine.py`: PIPER voice model loading and management
-  - `logger.py`: Centralized logging configuration
+- `src/`: Main TTS API application source
 - `assets/`: ONNX voice models and configuration files
-- `tests/`: Test files for API endpoints
+- `tests/`: Test files (mirrors src structure)
 - `docs/`: Comprehensive documentation for users and developers
-- `pyproject.toml`: Project configuration, dependencies, and tool settings
+- `.github/workflows/`: CI/CD workflows
+- `pyproject.toml`: Project configuration and dependencies, and tool settings
 
 ## Environment Setup
 
@@ -149,6 +147,7 @@ async def render_feed(...):
 - **Use `git worktree`** for parallel/long-running AI branches (e.g., `git worktree add ../wip-foo -b wip-foo`).
 - **Review AI-generated code**: Never merge code you don't understand.
 - **Always use conventional commit standard with gitmoji**: e.g. "feat:" "perf: :zap:"
+- **Never commit to main**: Always work with separate branches and Pull Requests.
 
 ---
 
