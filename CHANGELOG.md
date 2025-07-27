@@ -16,7 +16,7 @@
 ### Documentation
 
 * 📚 comprehensive documentation update and code annotation ([c5cbe37](https://github.com/stkr22/tts-batch-api-py/commit/c5cbe37f5ff64dec617aa9735e5cedc6894307fe))
-* 📚 comprehensive documentation update and code annotation ([0492a53](https://github.com/stkr22/tts-batch-api-py/commit/0492a53c47cd42291c961e57edee6b4ca61f40da))
+* 📚 comprehensive documentation update and code annotation ([2382e49](https://github.com/stkr22/tts-batch-api-py/commit/2382e4962a717dae44613da30cbaad5b39c7fefb))
 * 📚 update API documentation for sample rate conversion ([8345cfa](https://github.com/stkr22/tts-batch-api-py/commit/8345cfae7eadf8d238ef5ff60a867b6d22195249))
 * 📝 update project structure in AGENTS.md ([1506484](https://github.com/stkr22/tts-batch-api-py/commit/1506484d071696c80b27347d7f64c1821d6e2f52))
 
@@ -33,8 +33,8 @@
 ### Bug Fixes
 
 * resolve container module path issue by copying source code directly [AI] ([1c03799](https://github.com/stkr22/tts-batch-api-py/commit/1c03799262b3b67679bb658d033b5e927508121d))
-* resolve container module path issue by copying source code directly [AI] ([34971b9](https://github.com/stkr22/tts-batch-api-py/commit/34971b99a88f385efb48d7fcd6345d4fd2fe8296))
-* resolve setuptools-scm version detection in container build [AI] ([5319317](https://github.com/stkr22/tts-batch-api-py/commit/5319317037231fe6a946593d6ba1b5995245fc68))
+* resolve container module path issue by copying source code directly [AI] ([ac29d7e](https://github.com/stkr22/tts-batch-api-py/commit/ac29d7ea468427341781c357cbf1ea24227549f0))
+* resolve setuptools-scm version detection in container build [AI] ([0248519](https://github.com/stkr22/tts-batch-api-py/commit/02485193db61c66e414e20671f128d0b43402366))
 
 ## [4.1.1](https://github.com/stkr22/tts-batch-api-py/compare/v4.1.0...v4.1.1) (2025-07-26)
 
@@ -49,7 +49,7 @@
 ### Features
 
 * adding en_US ryan model ([866c20d](https://github.com/stkr22/tts-batch-api-py/commit/866c20da2f4f365be7cc02a2d5e84cbb58c0161c))
-* update piper-tts to v1.3.0 and fix linting issues [AI] ([c2d69b0](https://github.com/stkr22/tts-batch-api-py/commit/c2d69b03935f4929facca866001f90fddb4457bf))
+* update piper-tts to v1.3.0 and fix linting issues [AI] ([8222a08](https://github.com/stkr22/tts-batch-api-py/commit/8222a086a81f1cdad75581e12beceb316b072d9c))
 
 
 ### Bug Fixes
