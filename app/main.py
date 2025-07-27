@@ -14,12 +14,14 @@ from piper import SynthesisConfig
 
 from .audio_processing import resample_audio
 from .cache import CacheConfig, TTSCache
+from .config import ModelConfig
 from .logger import logger
-from .models import ModelManager, get_model_sample_rate
+from .models import ModelManager
 from .schemas import HealthResponse, SynthesizeRequest
 
 # AIDEV-NOTE: global-state; application-level model and cache instances
-model_manager = ModelManager()
+model_config = ModelConfig()  # type: ignore[call-arg]
+model_manager = ModelManager(model_config)
 cache: TTSCache | None = None
 
 
@@ -38,9 +40,8 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
     """
     global cache  # noqa: PLW0603
 
-    # Load voice models
-    default_model = os.getenv("TTS_MODEL", "en_US-ryan-medium.onnx")
-    model_manager.load_models(default_model)
+    # Load voice models using configuration
+    model_manager.load_models()
 
     # Initialize cache if Redis is available and enabled
     cache_enabled = os.getenv("ENABLE_CACHE", "true").lower() == "true"
@@ -99,7 +100,7 @@ async def health() -> HealthResponse:
 
 # AIDEV-NOTE: main-endpoint; core TTS synthesis with sample rate conversion and A/B testing
 @app.post("/synthesizeSpeech")
-async def synthesize_speech(  # noqa: PLR0915
+async def synthesize_speech(  # noqa: PLR0915, PLR0912
     synthesize_request: SynthesizeRequest,
     user_token: Annotated[str | None, Header()] = None,
 ) -> responses.Response:
@@ -125,26 +126,24 @@ async def synthesize_speech(  # noqa: PLR0915
     if user_token != os.environ["ALLOWED_USER_TOKEN"]:
         raise HTTPException(status_code=403)
 
-    # Determine which model to use
-    model_name = synthesize_request.model or "default"
+    # Get model and its sample rate (None uses default from config)
+    model_name = synthesize_request.model
     try:
         voice_engine = model_manager.get_model(model_name)
-    except KeyError as e:
-        available = model_manager.get_available_models()
-        raise HTTPException(
-            status_code=400, detail=f"Model '{model_name}' not available. Available models: {available}"
-        ) from e
-
-    # Get model's native sample rate
-    try:
-        native_sample_rate = get_model_sample_rate(model_name)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+        native_sample_rate = model_manager.get_model_sample_rate(model_name)
+        effective_model_name = model_manager.get_effective_model_name(model_name)
+    except (KeyError, ValueError) as e:
+        if isinstance(e, KeyError):
+            available = model_manager.get_available_models()
+            detail = f"Model '{model_name}' not available. Available models: {available}"
+        else:
+            detail = str(e)
+        raise HTTPException(status_code=400, detail=detail) from e
 
     target_sample_rate = synthesize_request.sample_rate
 
     # Cache at target sample rate for efficiency
-    cache_key = f"{model_name}:{target_sample_rate}:{synthesize_request.text}"
+    cache_key = f"{effective_model_name}:{target_sample_rate}:{synthesize_request.text}"
 
     # Cache-first pattern: check for audio at target sample rate (if cache available)
     cached_audio = None
@@ -159,7 +158,7 @@ async def synthesize_speech(  # noqa: PLR0915
                 logger.info(
                     "Cache HIT: %s, model=%s, target=%d, time=%.2fms",
                     synthesize_request.text[:50],
-                    model_name,
+                    effective_model_name,
                     target_sample_rate,
                     cache_time * 1000,
                 )
@@ -168,7 +167,7 @@ async def synthesize_speech(  # noqa: PLR0915
                     media_type="audio/x-raw",
                     headers={
                         "Content-Length": str(len(cached_audio)),
-                        "X-Model": model_name,
+                        "X-Model": effective_model_name,
                         "X-Sample-Rate": str(target_sample_rate),
                         "X-Cache": cache_status,
                         "X-Resampling": "NONE",
@@ -221,7 +220,7 @@ async def synthesize_speech(  # noqa: PLR0915
     logger.info(
         "Synthesis: %s, model=%s, native=%d, target=%d, synthesis=%.2fms, resample=%.2fms, total=%.2fms",
         synthesize_request.text[:50],
-        model_name,
+        effective_model_name,
         native_sample_rate,
         target_sample_rate,
         synthesis_time * 1000,
@@ -234,7 +233,7 @@ async def synthesize_speech(  # noqa: PLR0915
         media_type="audio/x-raw",
         headers={
             "Content-Length": str(len(audio_data)),
-            "X-Model": model_name,
+            "X-Model": effective_model_name,
             "X-Sample-Rate": str(target_sample_rate),
             "X-Cache": cache_status,
             "X-Resampling": "APPLIED" if resampling_applied else "NONE",
