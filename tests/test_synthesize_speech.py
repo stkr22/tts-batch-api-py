@@ -24,6 +24,8 @@ def test_synthesize_speech():
         response = client.post(
             "/synthesizeSpeech",
             headers={"user-token": "DEBUG"},
-            json={"samplerate": 16000, "text": "Hello!"},
+            json={"sample_rate": 16000, "text": "Hello!"},
         )
-        assert response.status_code == HTTP_OK, "HTTP Code should be 200"
+        if response.status_code != HTTP_OK:
+            print(f"Response content: {response.text}")
+        assert response.status_code == HTTP_OK, f"HTTP Code should be 200, got {response.status_code}: {response.text}"
