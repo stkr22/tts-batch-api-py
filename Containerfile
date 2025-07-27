@@ -33,11 +33,17 @@ WORKDIR /app
 # Copy virtual environment from build stage
 COPY --from=build-python /app/.venv /app/.venv
 
-# Copy application source code and assets
+# Copy application source code
 COPY app/ /app/app/
-COPY assets/ /app/assets/
 
 ENV PATH="/app/.venv/bin:$PATH"
+
+# Download voice models at runtime
+RUN mkdir -p /app/assets && \
+    python -m piper.download_voices \
+    --download-dir /app/assets \
+    en_US-kathleen-low \
+    en_US-ryan-medium
 
 # Set the user to 'appuser'
 USER appuser

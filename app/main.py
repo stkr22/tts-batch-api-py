@@ -1,136 +1,26 @@
-import hashlib
-import logging
+"""FastAPI application for TTS Batch API.
+
+Main application file that orchestrates the TTS service with caching,
+model management, and audio processing capabilities.
+"""
+
 import os
+import time
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
 from typing import Annotated
 
-import piper
 from fastapi import FastAPI, Header, HTTPException, responses
 from piper import SynthesisConfig
-from pydantic import BaseModel
-from redis import asyncio as aioredis
 
-from . import initialize_voice_engine as init_voice
-
-
-# AIDEV-NOTE: cache-config; centralized caching configuration for Redis TTL management
-@dataclass
-class CacheConfig:
-    """Configuration for TTS audio caching system.
-
-    Attributes:
-        enabled: Whether caching is enabled (can be disabled for testing)
-        ttl: Time-to-live in seconds for cached audio data (default: 7 days)
-    """
-
-    enabled: bool = True
-    ttl: int = 60 * 60 * 24 * 7  # 7 days in seconds
-
-
-# AIDEV-NOTE: performance-critical; Redis caching for audio synthesis results
-class TTSCache:
-    """High-performance Redis-based cache for synthesized audio data.
-
-    This class implements a cache-first pattern for TTS synthesis results,
-    significantly reducing computation time for repeated text requests.
-    Cache keys are deterministic SHA256 hashes of voice_id:text combinations.
-
-    Args:
-        redis_url: Redis connection URL with optional authentication
-        config: Cache configuration including TTL and enable/disable flag
-    """
-
-    def __init__(self, redis_url: str, config: CacheConfig) -> None:
-        self.redis = aioredis.from_url(redis_url)
-        self.config = config
-        self.logger = logging.getLogger("tts_cache")
-
-    def _generate_cache_key(self, text: str, voice_id: str = "default") -> str:
-        """Generate a deterministic cache key for the TTS request.
-
-        Uses SHA256 hash of voice_id:text to create collision-resistant keys.
-        The 'tts:' prefix helps with Redis key organization and debugging.
-
-        Args:
-            text: Input text for synthesis
-            voice_id: Voice model identifier (future multi-voice support)
-
-        Returns:
-            Hex-encoded SHA256 hash prefixed with 'tts:'
-        """
-        key_content = f"{voice_id}:{text}"
-        return f"tts:{hashlib.sha256(key_content.encode()).hexdigest()}"
-
-    async def get(self, text: str, voice_id: str = "default") -> bytes | None:
-        """Retrieve cached audio data if available.
-
-        Implements cache-first pattern with detailed logging for debugging.
-        Returns None for both cache misses and disabled cache.
-
-        Args:
-            text: Input text to lookup
-            voice_id: Voice model identifier
-
-        Returns:
-            Cached audio bytes or None if not found/disabled
-        """
-        if not self.config.enabled:
-            self.logger.info("Cache disabled, skipping lookup")
-            return None
-
-        cache_key = self._generate_cache_key(text, voice_id)
-        cached_data: bytes = await self.redis.get(cache_key)  # type: ignore
-
-        if cached_data:
-            self.logger.info("Cache HIT for text: %s (key: %s)", text[:50], cache_key)
-        else:
-            self.logger.info("Cache MISS for text: %s (key: %s)", text[:50], cache_key)
-
-        return cached_data
-
-    async def set(self, text: str, audio_data: bytes, voice_id: str = "default") -> None:
-        """Store audio data in cache with TTL.
-
-        Uses Redis SETEX for atomic set-with-expiration operation.
-        Logs cache storage for monitoring and debugging.
-
-        Args:
-            text: Input text that was synthesized
-            audio_data: Raw audio bytes to cache
-            voice_id: Voice model identifier
-        """
-        if not self.config.enabled:
-            self.logger.info("Cache disabled, skipping storage")
-            return
-
-        cache_key = self._generate_cache_key(text, voice_id)
-        await self.redis.setex(cache_key, self.config.ttl, audio_data)
-        self.logger.info(
-            "Cached %d bytes for text: %s (key: %s, TTL: %d)", len(audio_data), text[:50], cache_key, self.config.ttl
-        )
-
-    async def close(self) -> None:
-        """Close Redis connection gracefully.
-
-        Called during application shutdown to clean up resources.
-        """
-        await self.redis.close()
-
-
-class SynthesizeRequest(BaseModel):
-    """Request model for text-to-speech synthesis.
-
-    Attributes:
-        text: Input text to convert to speech (max ~500 chars recommended)
-    """
-
-    text: str
-
+from .audio_processing import resample_audio
+from .cache import CacheConfig, TTSCache
+from .logger import logger
+from .models import ModelManager, get_model_sample_rate
+from .schemas import HealthResponse, SynthesizeRequest
 
 # AIDEV-NOTE: global-state; application-level model and cache instances
-ml_models: dict[str, piper.PiperVoice] = {}  # Global voice model storage
-cache: TTSCache | None = None  # Global cache instance
+model_manager = ModelManager()
+cache: TTSCache | None = None
 
 
 # AIDEV-NOTE: startup-shutdown; FastAPI lifespan for resource management
@@ -148,40 +38,54 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
     """
     global cache  # noqa: PLW0603
 
-    # Initialize voice engine with configured model
-    ml_models["voice_engine"] = init_voice.initialize_voice_engine(
-        os.getenv("TTS_MODEL", "en_US-kathleen-low.onnx"),
-    )
+    # Load voice models
+    default_model = os.getenv("TTS_MODEL", "en_US-ryan-medium.onnx")
+    model_manager.load_models(default_model)
 
-    # Build Redis URL with optional authentication
-    redis_pw = os.getenv("REDIS_PASSWORD")
-    redis_url = "redis://"
-    if redis_pw:
-        redis_url = f"{redis_url}:{redis_pw}@"
-    redis_url = f"{redis_url}{os.getenv('REDIS_HOST', 'localhost')}:{os.getenv('REDIS_PORT', '6379')}"
+    # Initialize cache if Redis is available and enabled
+    cache_enabled = os.getenv("ENABLE_CACHE", "true").lower() == "true"
+    
+    if cache_enabled:
+        try:
+            # Build Redis URL with optional authentication
+            redis_pw = os.getenv("REDIS_PASSWORD")
+            redis_url = "redis://"
+            if redis_pw:
+                redis_url = f"{redis_url}:{redis_pw}@"
+            redis_url = f"{redis_url}{os.getenv('REDIS_HOST', 'localhost')}:{os.getenv('REDIS_PORT', '6379')}"
 
-    # Initialize cache with environment-based configuration
-    cache = TTSCache(
-        redis_url=redis_url,
-        config=CacheConfig(
-            enabled=os.getenv("ENABLE_CACHE", "true").lower() == "true",
-            ttl=int(os.getenv("CACHE_TTL", "604800")),
-        ),
-    )
+            # Initialize cache with environment-based configuration
+            cache = TTSCache(
+                redis_url=redis_url,
+                config=CacheConfig(
+                    enabled=True,
+                    ttl=int(os.getenv("CACHE_TTL", "604800")),
+                ),
+            )
+            logger.info("Cache initialized successfully")
+        except Exception as e:
+            logger.warning("Failed to initialize cache: %s. Running without cache.", e)
+            cache = None
+    else:
+        logger.info("Cache disabled via ENABLE_CACHE=false")
+        cache = None
 
     yield  # Application runs here
 
     # Cleanup resources on shutdown
     if cache:
-        await cache.close()
-    ml_models.clear()
+        try:
+            await cache.aclose()
+        except Exception as e:
+            logger.warning("Cache cleanup failed: %s", e)
+    model_manager.clear_models()
 
 
 app = FastAPI(lifespan=lifespan)
 
 
-@app.get("/health")
-async def health() -> dict[str, str]:
+@app.get("/health", response_model=HealthResponse)
+async def health() -> HealthResponse:
     """Health check endpoint for container orchestration.
 
     Returns basic health status without authentication requirements.
@@ -190,61 +94,152 @@ async def health() -> dict[str, str]:
     Returns:
         Dict with health status indicator
     """
-    return {"status": "healthy"}
+    return HealthResponse(status="healthy")
 
 
-# AIDEV-NOTE: main-endpoint; core TTS synthesis with caching strategy
+# AIDEV-NOTE: main-endpoint; core TTS synthesis with sample rate conversion and A/B testing
 @app.post("/synthesizeSpeech")
-async def synthesize_speech(
+async def synthesize_speech(  # noqa: PLR0915
     synthesize_request: SynthesizeRequest,
     user_token: Annotated[str | None, Header()] = None,
 ) -> responses.Response:
-    """Convert text to speech with intelligent caching.
+    """Convert text to speech with intelligent caching and sample rate conversion.
 
-    Implements cache-first pattern: checks Redis cache before synthesis.
-    Returns raw 16-bit PCM audio data at 22050 Hz mono.
+    Supports multiple voice models and automatic resampling to match target
+    device requirements. Audio is cached at the requested sample rate for
+    optimal performance.
 
     Args:
-        synthesize_request: Request containing text to synthesize
+        synthesize_request: Request with text, sample_rate, and optional model
         user_token: Authentication token from header
 
     Returns:
-        Response with audio/x-raw content and proper headers
+        Response with audio/x-raw content at requested sample rate
 
     Raises:
-        HTTPException: 403 for auth failure, 500 for system errors
+        HTTPException: 403 for auth failure, 400 for invalid model, 500 for system errors
     """
+    start_time = time.time()
+
     # Authentication check
     if user_token != os.environ["ALLOWED_USER_TOKEN"]:
         raise HTTPException(status_code=403)
 
-    if not cache:
-        raise HTTPException(status_code=500, detail="Cache not initialized")
+    # Determine which model to use
+    model_name = synthesize_request.model or "default"
+    try:
+        voice_engine = model_manager.get_model(model_name)
+    except KeyError as e:
+        available = model_manager.get_available_models()
+        raise HTTPException(
+            status_code=400, detail=f"Model '{model_name}' not available. Available models: {available}"
+        ) from e
 
-    # Cache-first pattern: try to get from cache first
-    cached_audio = await cache.get(synthesize_request.text)
-    if cached_audio:
-        return responses.Response(
-            content=cached_audio,
-            media_type="audio/x-raw",
-            headers={"Content-Length": str(len(cached_audio))},
-        )
+    # Get model's native sample rate
+    try:
+        native_sample_rate = get_model_sample_rate(model_name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
-    # Cache miss: generate new audio using PIPER TTS
-    voice_engine = ml_models["voice_engine"]
+    target_sample_rate = synthesize_request.sample_rate
 
-    # Use default synthesis configuration
+    # Cache at target sample rate for efficiency
+    cache_key = f"{model_name}:{target_sample_rate}:{synthesize_request.text}"
+
+    # Cache-first pattern: check for audio at target sample rate (if cache available)
+    cached_audio = None
+    cache_status = "DISABLED"
+    
+    if cache:
+        try:
+            cached_audio = await cache.get(cache_key)
+            if cached_audio:
+                cache_time = time.time() - start_time
+                cache_status = "HIT"
+                logger.info(
+                    "Cache HIT: %s, model=%s, target=%d, time=%.2fms",
+                    synthesize_request.text[:50],
+                    model_name,
+                    target_sample_rate,
+                    cache_time * 1000,
+                )
+                return responses.Response(
+                    content=cached_audio,
+                    media_type="audio/x-raw",
+                    headers={
+                        "Content-Length": str(len(cached_audio)),
+                        "X-Model": model_name,
+                        "X-Sample-Rate": str(target_sample_rate),
+                        "X-Cache": cache_status,
+                        "X-Resampling": "NONE",
+                    },
+                )
+            cache_status = "MISS"
+        except Exception as e:
+            logger.warning("Cache lookup failed: %s", e)
+            cache_status = "ERROR"
+    else:
+        logger.info("Cache disabled, synthesizing fresh audio")
+
+    # Cache miss: synthesize audio with selected model
+    synthesis_start = time.time()
     synthesis_config = SynthesisConfig()
-    audio_chunks = voice_engine.synthesize(synthesize_request.text, synthesis_config)
+    
+    try:
+        audio_chunks = voice_engine.synthesize(synthesize_request.text, synthesis_config)
+        audio_data = b"".join(chunk.audio_int16_bytes for chunk in audio_chunks)
+    except Exception as e:
+        logger.error("TTS synthesis failed: %s", e)
+        raise HTTPException(status_code=500, detail="Audio synthesis failed") from e
+    
+    synthesis_time = time.time() - synthesis_start
 
-    # Convert audio chunks to bytes for caching and response
-    audio_data = b"".join(chunk.audio_int16_bytes for chunk in audio_chunks)
+    # Apply resampling if needed
+    resample_start = time.time()
+    resampling_applied = False
+    
+    if native_sample_rate != target_sample_rate:
+        try:
+            audio_data = resample_audio(audio_data, native_sample_rate, target_sample_rate)
+            resampling_applied = True
+        except Exception as e:
+            logger.error("Audio resampling failed: %s", e)
+            raise HTTPException(status_code=500, detail="Audio resampling failed") from e
 
-    # Store in cache for future requests
-    await cache.set(synthesize_request.text, audio_data)
+    resample_time = time.time() - resample_start
+
+    # Store in cache for future requests (if cache available)
+    if cache:
+        try:
+            await cache.set(cache_key, audio_data)
+        except Exception as e:
+            logger.warning("Cache storage failed: %s", e)
+
+    total_time = time.time() - start_time
+    
+    # Performance logging
+    logger.info(
+        "Synthesis: %s, model=%s, native=%d, target=%d, synthesis=%.2fms, resample=%.2fms, total=%.2fms",
+        synthesize_request.text[:50],
+        model_name,
+        native_sample_rate,
+        target_sample_rate,
+        synthesis_time * 1000,
+        resample_time * 1000,
+        total_time * 1000,
+    )
 
     return responses.Response(
         content=audio_data,
         media_type="audio/x-raw",
-        headers={"Content-Length": str(len(audio_data))},
+        headers={
+            "Content-Length": str(len(audio_data)),
+            "X-Model": model_name,
+            "X-Sample-Rate": str(target_sample_rate),
+            "X-Cache": cache_status,
+            "X-Resampling": "APPLIED" if resampling_applied else "NONE",
+            "X-Synthesis-Time": f"{synthesis_time * 1000:.1f}ms",
+            "X-Resample-Time": f"{resample_time * 1000:.1f}ms",
+            "X-Total-Time": f"{total_time * 1000:.1f}ms",
+        },
     )

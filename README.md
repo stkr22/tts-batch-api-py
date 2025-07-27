@@ -48,19 +48,28 @@ uv run uvicorn app.main:app --reload
 ## API Usage
 
 ```bash
+# Basic usage (defaults to ryan-medium model at 16kHz)
 curl -X POST "http://localhost:8000/synthesizeSpeech" \
   -H "user-token: your-secret-token" \
   -H "Content-Type: application/json" \
   -d '{"text": "Hello, this is a test message"}' \
-  --output audio.wav
+  --output audio.raw
+
+# Advanced usage with model and sample rate selection
+curl -X POST "http://localhost:8000/synthesizeSpeech" \
+  -H "user-token: your-secret-token" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Hello world", "sample_rate": 16000, "model": "ryan-medium"}' \
+  --output audio.raw
 ```
+
 
 ## Configuration
 
 | Environment Variable | Default | Description |
 |---------------------|---------|-------------|
 | `ALLOWED_USER_TOKEN` | Required | Authentication token |
-| `TTS_MODEL` | `en_US-kathleen-low.onnx` | Voice model to use |
+| `TTS_MODEL` | `en_US-ryan-medium.onnx` | Voice model to use |
 | `REDIS_HOST` | `localhost` | Redis server hostname |
 | `REDIS_PORT` | `6379` | Redis server port |
 | `REDIS_PASSWORD` | None | Redis authentication |
