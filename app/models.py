@@ -9,74 +9,58 @@ import logging
 import piper
 
 from . import initialize_voice_engine as init_voice
+from .config import ModelConfig
 
 logger = logging.getLogger("model_manager")
-
-
-# AIDEV-NOTE: model-utilities; helper functions for model metadata and sample rates
-def get_model_sample_rate(model_name: str) -> int:
-    """Get the native sample rate for a voice model.
-    
-    Returns the sample rate from model configuration to determine
-    if resampling is needed for the target sample rate.
-    
-    Args:
-        model_name: Model identifier (kathleen-low, ryan-medium, etc.)
-        
-    Returns:
-        Native sample rate in Hz
-        
-    Raises:
-        ValueError: If model is unknown
-    """
-    model_sample_rates = {
-        "kathleen-low": 16000,
-        "ryan-medium": 22050,
-        "default": 22050,  # Default to ryan-medium rate
-    }
-    
-    if model_name not in model_sample_rates:
-        raise ValueError(f"Unknown model: {model_name}")
-    
-    return model_sample_rates[model_name]
 
 
 class ModelManager:
     """Manager for PIPER TTS voice models.
     
-    Handles loading and storing multiple voice models for A/B testing
-    and production use. Provides model metadata and validation.
+    Handles loading and storing multiple voice models using configurable
+    settings. Caches all model metadata to avoid repeated disk I/O.
     """
     
-    def __init__(self) -> None:
-        self.models: dict[str, piper.PiperVoice] = {}
+    def __init__(self, config: ModelConfig | None = None) -> None:
+        self.config = config or ModelConfig()  # type: ignore[call-arg]
+        
+        # Cache config values to avoid repeated calls
+        self.default_model_name = self.config.get_effective_default_model()
         self.available_models = {
-            "kathleen-low": "en_US-kathleen-low.onnx",
-            "ryan-medium": "en_US-ryan-medium.onnx",
+            model_name: f"{model_name}.onnx" 
+            for model_name in self.config.available_models
         }
+        
+        # Model storage
+        self.models: dict[str, piper.PiperVoice] = {}
+        
+        # AIDEV-NOTE: performance-cache; sample rates read once during load to avoid disk I/O
+        self.model_sample_rates: dict[str, int] = {}
     
-    def load_models(self, default_model_file: str) -> None:
-        """Load all available voice models.
+    def load_models(self) -> None:
+        """Load all configured voice models and cache their sample rates."""
+        logger.info("Loading models: %s", list(self.available_models.keys()))
+        logger.info("Default model: %s", self.default_model_name)
         
-        Args:
-            default_model_file: Default model file to load (for backward compatibility)
-        """
-        # Load default model (optimized for quality - ryan-medium proven superior)
-        self.models["default"] = init_voice.initialize_voice_engine(default_model_file)
-        
-        # Load all available models for A/B testing
+        # Load all configured models and cache their sample rates
         for model_name, model_file in self.available_models.items():
             try:
+                # Load the model
                 self.models[model_name] = init_voice.initialize_voice_engine(model_file)
-                logger.info("Loaded model: %s (%s)", model_name, model_file)
+                
+                # Read and cache the sample rate once
+                sample_rate = self.config.get_model_sample_rate(model_name)
+                self.model_sample_rates[model_name] = sample_rate
+                
+                logger.info("Loaded model: %s (%s) - %d Hz", model_name, model_file, sample_rate)
             except Exception as e:
                 logger.warning("Failed to load model %s: %s", model_name, e)
     
-    def get_model(self, model_name: str) -> piper.PiperVoice:
-        """Get a loaded model by name.
+    def get_model(self, model_name: str | None = None) -> piper.PiperVoice:
+        """Get a loaded model by name, or default if None.
         
         Args:
-            model_name: Name of the model to retrieve
+            model_name: Name of the model to retrieve, or None for default
             
         Returns:
             The loaded PiperVoice model
@@ -84,11 +68,46 @@ class ModelManager:
         Raises:
             KeyError: If model is not loaded
         """
-        if model_name not in self.models:
+        effective_name = self.get_effective_model_name(model_name)
+            
+        if effective_name not in self.models:
             available = list(self.models.keys())
-            raise KeyError(f"Model '{model_name}' not available. Available models: {available}")
+            raise KeyError(f"Model '{effective_name}' not available. Available models: {available}")
         
-        return self.models[model_name]
+        return self.models[effective_name]
+    
+    def get_model_sample_rate(self, model_name: str | None = None) -> int:
+        """Get the native sample rate for a voice model.
+        
+        Returns cached sample rate - no disk I/O after initial load.
+        
+        Args:
+            model_name: Model identifier, or None for default model
+            
+        Returns:
+            Native sample rate in Hz (cached from model configuration)
+            
+        Raises:
+            KeyError: If model sample rate is not cached
+        """
+        effective_name = self.get_effective_model_name(model_name)
+            
+        if effective_name not in self.model_sample_rates:
+            available = list(self.model_sample_rates.keys())
+            raise KeyError(f"Sample rate for '{effective_name}' not cached. Available: {available}")
+        
+        return self.model_sample_rates[effective_name]
+    
+    def get_effective_model_name(self, model_name: str | None = None) -> str:
+        """Get the effective model name, resolving None to default.
+        
+        Args:
+            model_name: Requested model name, or None for default
+            
+        Returns:
+            Actual model name to use (cached, no config calls)
+        """
+        return model_name or self.default_model_name
     
     def get_available_models(self) -> list[str]:
         """Get list of available model names.
@@ -99,5 +118,6 @@ class ModelManager:
         return list(self.models.keys())
     
     def clear_models(self) -> None:
-        """Clear all loaded models."""
+        """Clear all loaded models and cached data."""
         self.models.clear()
+        self.model_sample_rates.clear()
