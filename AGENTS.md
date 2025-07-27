@@ -28,6 +28,28 @@
 
 ## Critical Architecture Decisions
 
+### TTS Engine & Model Management
+- **PIPER TTS Integration**: Core synthesis engine with ONNX model loading
+- **Auto-download Strategy**: Models downloaded on first use if missing from `/app/assets`
+- **Memory Management**: Single voice model loaded per container instance to prevent RAM exhaustion
+- **Future Enhancement**: Multi-voice support with RAM-aware model caching planned
+
+### Caching Architecture
+- **Redis-based Audio Caching**: SHA256 hashing of `voice_id:text` for deterministic keys
+- **TTL Strategy**: Default 7-day cache expiration, configurable via `CACHE_TTL`
+- **Cache-first Pattern**: Always check cache before synthesis to minimize compute
+
+### API Design Patterns
+- **Token-based Authentication**: Simple header-based auth via `ALLOWED_USER_TOKEN`
+- **Versioning Strategy**: RESTful `/v1/` prefix planned for API evolution
+- **Error Response**: HTTP 403 for auth failures, 500 for system errors
+- **Media Type**: Returns `audio/x-raw` with explicit Content-Length headers
+
+### Environment Configuration
+- **Container-first Design**: All config via environment variables for K8s deployment
+- **Asset Directory**: Configurable via `ASSETS_DIR`, defaults to `/app/assets`
+- **Redis Connection**: Supports password auth and custom host/port configuration
+
 ---
 
 ## Tech Stack
@@ -61,11 +83,14 @@
 
 ## Project Structure
 
-- `src/{{ python_package_distribution_name }}/`: Main package source
-- `tests/`: Test files (mirrors src structure)
-- `docs/`: Documentation source
-- `.github/workflows/`: CI/CD workflows
-- `pyproject.toml`: Project configuration and dependencies
+- `app/`: Main TTS API application source
+  - `main.py`: FastAPI application with TTS endpoints and caching
+  - `initialize_voice_engine.py`: PIPER voice model loading and management
+  - `logger.py`: Centralized logging configuration
+- `assets/`: ONNX voice models and configuration files
+- `tests/`: Test files for API endpoints
+- `docs/`: Comprehensive documentation for users and developers
+- `pyproject.toml`: Project configuration, dependencies, and tool settings
 
 ## Environment Setup
 
