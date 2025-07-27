@@ -5,8 +5,10 @@ This script reads the model configuration and downloads the required
 PIPER TTS models during container build time.
 """
 
-import sys
 import pathlib
+import sys
+
+import piper.download_voices as piper_download
 
 # Add app directory to Python path for imports
 app_dir = pathlib.Path(__file__).parent.parent / "app"
@@ -18,8 +20,6 @@ except ImportError:
     # Fallback for container environment
     sys.path.insert(0, "/app")
     from app.config import ModelConfig
-
-import piper.download_voices as piper_download
 
 
 def main():
