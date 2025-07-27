@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.2.0](https://github.com/stkr22/tts-batch-api-py/compare/v4.1.3...v4.2.0) (2025-07-27)
+
+
+### Features
+
+* ✨ add sample rate conversion and model optimization ([49ec86f](https://github.com/stkr22/tts-batch-api-py/commit/49ec86f32f951a1bc2c2231920d5c6589816444e)), closes [#36](https://github.com/stkr22/tts-batch-api-py/issues/36)
+
+
+### Bug Fixes
+
+* 🧪 update test to use correct sample_rate field name ([d1b5be7](https://github.com/stkr22/tts-batch-api-py/commit/d1b5be7f8202eead11f1d5368d1ea4f673e92996))
+
+
+### Documentation
+
+* 📚 comprehensive documentation update and code annotation ([c5cbe37](https://github.com/stkr22/tts-batch-api-py/commit/c5cbe37f5ff64dec617aa9735e5cedc6894307fe))
+* 📚 comprehensive documentation update and code annotation ([0492a53](https://github.com/stkr22/tts-batch-api-py/commit/0492a53c47cd42291c961e57edee6b4ca61f40da))
+* 📚 update API documentation for sample rate conversion ([8345cfa](https://github.com/stkr22/tts-batch-api-py/commit/8345cfae7eadf8d238ef5ff60a867b6d22195249))
+* 📝 update project structure in AGENTS.md ([1506484](https://github.com/stkr22/tts-batch-api-py/commit/1506484d071696c80b27347d7f64c1821d6e2f52))
+
 ## [4.1.3](https://github.com/stkr22/tts-batch-api-py/compare/v4.1.2...v4.1.3) (2025-07-26)
 
 
