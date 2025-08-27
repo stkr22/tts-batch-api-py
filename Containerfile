@@ -49,4 +49,4 @@ USER appuser
 EXPOSE 8080
 
 # Start the application as the non-root user
-CMD ["fastapi", "run", "app/main.py", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["fastapi", "run", "app.main", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080"]
