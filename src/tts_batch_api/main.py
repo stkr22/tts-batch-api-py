@@ -45,7 +45,7 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
 
     # Initialize cache if Redis is available and enabled
     cache_enabled = os.getenv("ENABLE_CACHE", "true").lower() == "true"
-    
+
     if cache_enabled:
         try:
             # Build Redis URL with optional authentication
@@ -148,7 +148,7 @@ async def synthesize_speech(  # noqa: PLR0915, PLR0912
     # Cache-first pattern: check for audio at target sample rate (if cache available)
     cached_audio = None
     cache_status = "DISABLED"
-    
+
     if cache:
         try:
             cached_audio = await cache.get(cache_key)
@@ -183,20 +183,20 @@ async def synthesize_speech(  # noqa: PLR0915, PLR0912
     # Cache miss: synthesize audio with selected model
     synthesis_start = time.time()
     synthesis_config = SynthesisConfig()
-    
+
     try:
         audio_chunks = voice_engine.synthesize(synthesize_request.text, synthesis_config)
         audio_data = b"".join(chunk.audio_int16_bytes for chunk in audio_chunks)
     except Exception as e:
         logger.error("TTS synthesis failed: %s", e)
         raise HTTPException(status_code=500, detail="Audio synthesis failed") from e
-    
+
     synthesis_time = time.time() - synthesis_start
 
     # Apply resampling if needed
     resample_start = time.time()
     resampling_applied = False
-    
+
     if native_sample_rate != target_sample_rate:
         try:
             audio_data = resample_audio(audio_data, native_sample_rate, target_sample_rate)
@@ -215,7 +215,7 @@ async def synthesize_speech(  # noqa: PLR0915, PLR0912
             logger.warning("Cache storage failed: %s", e)
 
     total_time = time.time() - start_time
-    
+
     # Performance logging
     logger.info(
         "Synthesis: %s, model=%s, native=%d, target=%d, synthesis=%.2fms, resample=%.2fms, total=%.2fms",

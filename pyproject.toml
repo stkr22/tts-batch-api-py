@@ -93,7 +93,7 @@ python_files = ["test_*.py"]
 addopts = "-ra -q -n auto"
 
 [tool.coverage.run]
-source = ["app"]
+source = ["tts_batch_api"]
 branch = true
 
 [tool.coverage.report]
