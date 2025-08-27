@@ -34,7 +34,7 @@ WORKDIR /app
 COPY --from=build-python /app/.venv /app/.venv
 
 # Copy application source code and scripts
-COPY app/ /app/app/
+COPY src/tts_batch_api/ /app/app/
 COPY scripts/ /app/scripts/
 
 ENV PATH="/app/.venv/bin:$PATH"

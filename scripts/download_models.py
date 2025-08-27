@@ -25,14 +25,14 @@ except ImportError:
 def main():
     """Download all configured models to the assets directory."""
     config = ModelConfig()
-    
+
     print(f"Downloading models to: {config.assets_dir}")
     print(f"Available models: {config.available_models}")
     print(f"Default model: {config.get_effective_default_model()}")
-    
+
     # Ensure assets directory exists
     config.assets_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Download each configured model
     for model_name in config.available_models:
         print(f"Downloading model: {model_name}")
@@ -42,7 +42,7 @@ def main():
         except Exception as e:
             print(f"✗ Failed to download {model_name}: {e}")
             # Don't exit on individual failures to allow partial downloads
-    
+
     print("Model download completed.")
 
 
