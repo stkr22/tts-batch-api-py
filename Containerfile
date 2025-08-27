@@ -34,7 +34,7 @@ WORKDIR /app
 COPY --from=build-python /app/.venv /app/.venv
 
 # Copy application source code and scripts
-COPY app/ /app/app/
+COPY src/tts-batch-api/ /app/app/
 COPY scripts/ /app/scripts/
 
 ENV PATH="/app/.venv/bin:$PATH"
@@ -49,4 +49,4 @@ USER appuser
 EXPOSE 8080
 
 # Start the application as the non-root user
-CMD ["fastapi", "run", "app.main", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["fastapi", "run", "app/main.py", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080"]
