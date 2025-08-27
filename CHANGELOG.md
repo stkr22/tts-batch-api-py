@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.1](https://github.com/stkr22/tts-batch-api-py/compare/v5.0.0...v5.0.1) (2025-08-27)
+
+
+### Bug Fixes
+
+* linting issues ([def89af](https://github.com/stkr22/tts-batch-api-py/commit/def89af451d77653be02209dbee9fbe8860521cc))
+
 ## [5.0.0](https://github.com/stkr22/tts-batch-api-py/compare/v4.1.0...v5.0.0) (2025-07-27)
 
 
