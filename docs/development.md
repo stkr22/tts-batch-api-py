@@ -120,10 +120,10 @@ pre-commit run --all-files
    # Format and lint
    uv run ruff format .
    uv run ruff check .
-   
+
    # Type check
    uv run mypy app/
-   
+
    # Test
    uv run pytest
    ```
@@ -306,7 +306,7 @@ async def benchmark_synthesis(num_requests=100):
     """Benchmark synthesis performance."""
     async with httpx.AsyncClient() as client:
         start_time = time.time()
-        
+
         tasks = []
         for i in range(num_requests):
             task = client.post(
@@ -315,10 +315,10 @@ async def benchmark_synthesis(num_requests=100):
                 json={"text": f"Test message {i}"}
             )
             tasks.append(task)
-        
+
         responses = await asyncio.gather(*tasks)
         end_time = time.time()
-        
+
         successful = sum(1 for r in responses if r.status_code == 200)
         print(f"Completed {successful}/{num_requests} requests in {end_time - start_time:.2f}s")
         print(f"Rate: {successful / (end_time - start_time):.2f} requests/second")
