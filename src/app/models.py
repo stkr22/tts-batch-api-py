@@ -8,8 +8,8 @@ import logging
 
 import piper
 
-from . import initialize_voice_engine as init_voice
-from .config import ModelConfig
+from app import initialize_voice_engine as init_voice
+from app.config import ModelConfig
 
 logger = logging.getLogger("model_manager")
 

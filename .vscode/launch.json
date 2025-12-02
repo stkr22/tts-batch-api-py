@@ -8,13 +8,12 @@
             "name": "Python Debugger: FastAPI",
             "type": "debugpy",
             "request": "launch",
-            "module": "uvicorn",
-            "args": [
-                "app.main:app",
-                "--port", "8181"
-            ],
-            "jinja": true,
-            "env": {"LOG_LEVEL": "DEBUG", "ALLOWED_USER_TOKEN": "DEBUG"}
+            "program": "src/app/main.py",
+            "console": "integratedTerminal",
+            "env": {
+                "LOG_LEVEL": "DEBUG",
+                "ALLOWED_USER_TOKEN": "DEBUG"
+            }
         }
     ]
 }
