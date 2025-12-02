@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.0.1](https://github.com/stkr22/tts-batch-api-py/compare/v5.0.0...v5.0.1) (2025-12-02)
+
+
+### Bug Fixes
+
+* linting issues ([def89af](https://github.com/stkr22/tts-batch-api-py/commit/def89af451d77653be02209dbee9fbe8860521cc))
+* update application source path in Containerfile ([a7cf83d](https://github.com/stkr22/tts-batch-api-py/commit/a7cf83dc158debbba10f42c9acb023ec1bd01511))
+* update devcontainer image to version 1.2.3 ([709980f](https://github.com/stkr22/tts-batch-api-py/commit/709980f738ae24f2837582eee324561e824b7dd3))
+* update Python base images and dependencies in Containerfile and pyproject.toml. Updating dependencies ([a525383](https://github.com/stkr22/tts-batch-api-py/commit/a525383460e099f389793a5223f1bbb4c09d6cb7))
+* using recommended fastapi project folder structure and debug ([fa257d3](https://github.com/stkr22/tts-batch-api-py/commit/fa257d36eb2d1a7bd932a3cd45046c375a3b2c7d))
+
 ## [5.0.0](https://github.com/stkr22/tts-batch-api-py/compare/v4.1.0...v5.0.0) (2025-07-27)
 
 
