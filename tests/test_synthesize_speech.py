@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from tts_batch_api import main
+from app import main
 
 # Constants
 HTTP_OK = 200
@@ -20,7 +20,7 @@ def set_env_vars():
     os.environ.pop("ALLOWED_USER_TOKEN", None)
 
 
-@patch("tts_batch_api.main.model_manager")
+@patch("app.main.model_manager")
 def test_synthesize_speech(mock_model_manager):
     # Mock the model manager to avoid loading real models
     mock_voice_engine = Mock()

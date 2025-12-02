@@ -4,7 +4,7 @@ import pathlib
 import piper
 import piper.download_voices as piper_download
 
-from .logger import logger
+from app.logger import logger
 
 
 # AIDEV-NOTE: filesystem-fallback; handles read-only container environments

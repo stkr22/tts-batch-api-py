@@ -9,15 +9,16 @@ import time
 from contextlib import asynccontextmanager
 from typing import Annotated
 
+import uvicorn
 from fastapi import FastAPI, Header, HTTPException, responses
 from piper import SynthesisConfig
 
-from .audio_processing import resample_audio
-from .cache import CacheConfig, TTSCache
-from .config import ModelConfig
-from .logger import logger
-from .models import ModelManager
-from .schemas import HealthResponse, SynthesizeRequest
+from app.audio_processing import resample_audio
+from app.cache import CacheConfig, TTSCache
+from app.config import ModelConfig
+from app.logger import logger
+from app.models import ModelManager
+from app.schemas import HealthResponse, SynthesizeRequest
 
 # AIDEV-NOTE: global-state; application-level model and cache instances
 model_config = ModelConfig()  # type: ignore[call-arg]
@@ -242,3 +243,7 @@ async def synthesize_speech(  # noqa: PLR0915, PLR0912
             "X-Total-Time": f"{total_time * 1000:.1f}ms",
         },
     )
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8181)
