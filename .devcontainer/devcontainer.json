@@ -1,6 +1,6 @@
 {
 	"name": "tts-batch-api-dev-environment",
-	"image": "ghcr.io/stkr22/devcontainer-python-container:1.2.3@sha256:a603226b921a1d5ffa7beea34471c0ec830f6c5ab0878a0d198be862bb06f523",
+	"image": "ghcr.io/stkr22/devcontainer-python-container:1.2.4@sha256:11a92f4d15144e636dfba1604c427fa1a39610658711c37098ec15f251321b7b",
 	"runArgs": [
 		"--cap-add=NET_RAW" // Needed for Claude Code IDE integration
 	],
