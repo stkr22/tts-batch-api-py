@@ -1,3 +1,9 @@
+"""Voice engine initialization and model management.
+
+This module handles PIPER voice model initialization with automatic
+downloading and writable directory detection for containerized environments.
+"""
+
 import os
 import pathlib
 
@@ -16,6 +22,7 @@ def get_writable_directory() -> pathlib.Path:
 
     Returns:
         Path to writable directory for model storage
+
     """
     assets_dir = pathlib.Path(os.getenv("ASSETS_DIR", "/app/assets"))
     if os.access(assets_dir, os.W_OK):
@@ -44,6 +51,7 @@ def initialize_voice_engine(model: str) -> piper.PiperVoice:
 
     Raises:
         Various exceptions from piper.PiperVoice.load() for invalid models
+
     """
     assets_dir = pathlib.Path(os.getenv("ASSETS_DIR", "/app/assets"))
     model_path = assets_dir / model

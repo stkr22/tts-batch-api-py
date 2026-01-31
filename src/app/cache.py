@@ -19,6 +19,7 @@ class CacheConfig:
     Attributes:
         enabled: Whether caching is enabled (can be disabled for testing)
         ttl: Time-to-live in seconds for cached audio data (default: 7 days)
+
     """
 
     enabled: bool = True
@@ -36,9 +37,17 @@ class TTSCache:
     Args:
         redis_url: Redis connection URL with optional authentication
         config: Cache configuration including TTL and enable/disable flag
+
     """
 
     def __init__(self, redis_url: str, config: CacheConfig) -> None:
+        """Initialize the TTS cache.
+
+        Args:
+            redis_url: Redis connection URL with optional authentication
+            config: Cache configuration including TTL and enable/disable flag
+
+        """
         self.redis = aioredis.from_url(redis_url)
         self.config = config
         self.logger = logging.getLogger("tts_cache")
@@ -55,6 +64,7 @@ class TTSCache:
 
         Returns:
             Hex-encoded SHA256 hash prefixed with 'tts:'
+
         """
         key_content = f"{voice_id}:{text}"
         return f"tts:{hashlib.sha256(key_content.encode()).hexdigest()}"
@@ -71,13 +81,14 @@ class TTSCache:
 
         Returns:
             Cached audio bytes or None if not found/disabled
+
         """
         if not self.config.enabled:
             self.logger.info("Cache disabled, skipping lookup")
             return None
 
         cache_key = self._generate_cache_key(text, voice_id)
-        cached_data: bytes = await self.redis.get(cache_key)  # type: ignore
+        cached_data: bytes = await self.redis.get(cache_key)  # type: ignore[assignment]
 
         if cached_data:
             self.logger.info("Cache HIT for text: %s (key: %s)", text[:50], cache_key)
@@ -96,6 +107,7 @@ class TTSCache:
             text: Input text that was synthesized
             audio_data: Raw audio bytes to cache
             voice_id: Voice model identifier
+
         """
         if not self.config.enabled:
             self.logger.info("Cache disabled, skipping storage")

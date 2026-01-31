@@ -175,7 +175,7 @@ class TTSClient:
     def __init__(self, base_url: str, token: str):
         self.base_url = base_url
         self.token = token
-    
+
     async def synthesize(self, text: str) -> bytes:
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -210,7 +210,7 @@ async function synthesizeSpeech(text, token, baseUrl = 'http://localhost:8000') 
                 responseType: 'arraybuffer'
             }
         );
-        
+
         return Buffer.from(response.data);
     } catch (error) {
         console.error('TTS request failed:', error.response?.status, error.response?.data);

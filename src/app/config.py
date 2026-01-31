@@ -77,6 +77,7 @@ class ModelConfig(BaseSettings):
         Raises:
             FileNotFoundError: If model config file doesn't exist
             ValueError: If sample rate cannot be extracted from config
+
         """
         config_path = self.get_model_config_path(model_name)
 
