@@ -38,6 +38,7 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
 
     Args:
         app: FastAPI application instance (unused but required by protocol)
+
     """
     global cache  # noqa: PLW0603
 
@@ -86,7 +87,7 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
 app = FastAPI(lifespan=lifespan)
 
 
-@app.get("/health", response_model=HealthResponse)
+@app.get("/health")
 async def health() -> HealthResponse:
     """Health check endpoint for container orchestration.
 
@@ -95,6 +96,7 @@ async def health() -> HealthResponse:
 
     Returns:
         Dict with health status indicator
+
     """
     return HealthResponse(status="healthy")
 
@@ -120,6 +122,7 @@ async def synthesize_speech(  # noqa: PLR0915, PLR0912
 
     Raises:
         HTTPException: 403 for auth failure, 400 for invalid model, 500 for system errors
+
     """
     start_time = time.time()
 

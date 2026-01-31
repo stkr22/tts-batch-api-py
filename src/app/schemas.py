@@ -14,6 +14,7 @@ class SynthesizeRequest(BaseModel):
         text: Input text to convert to speech (max ~500 chars recommended)
         sample_rate: Target sample rate in Hz (16000, 22050, 44100, 48000)
         model: Voice model to use (optional, defaults to ryan-medium)
+
     """
 
     text: str

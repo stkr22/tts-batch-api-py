@@ -22,6 +22,12 @@ class ModelManager:
     """
 
     def __init__(self, config: ModelConfig | None = None) -> None:
+        """Initialize the model manager.
+
+        Args:
+            config: Model configuration, or None to use default configuration
+
+        """
         self.config = config or ModelConfig()  # type: ignore[call-arg]
 
         # Cache config values to avoid repeated calls
@@ -64,6 +70,7 @@ class ModelManager:
 
         Raises:
             KeyError: If model is not loaded
+
         """
         effective_name = self.get_effective_model_name(model_name)
 
@@ -86,6 +93,7 @@ class ModelManager:
 
         Raises:
             KeyError: If model sample rate is not cached
+
         """
         effective_name = self.get_effective_model_name(model_name)
 
@@ -103,6 +111,7 @@ class ModelManager:
 
         Returns:
             Actual model name to use (cached, no config calls)
+
         """
         return model_name or self.default_model_name
 
@@ -111,6 +120,7 @@ class ModelManager:
 
         Returns:
             List of loaded model names
+
         """
         return list(self.models.keys())
 

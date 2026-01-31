@@ -27,6 +27,7 @@ def resample_audio(audio_data: bytes, original_rate: int, target_rate: int) -> b
 
     Raises:
         ValueError: If sample rates are invalid or zero
+
     """
     if original_rate == target_rate:
         return audio_data
