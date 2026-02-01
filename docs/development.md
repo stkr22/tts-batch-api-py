@@ -6,7 +6,7 @@ This guide covers local development setup, contribution guidelines, and developm
 
 - **Python 3.12+** (required)
 - **UV** (modern Python package manager)
-- **Redis** (for local caching)
+- **Valkey** (for local caching)
 - **Git** (for version control)
 
 ## Local Development Setup
@@ -33,21 +33,21 @@ Create a `.env` file for local development:
 # .env
 ALLOWED_USER_TOKEN=debug-token
 TTS_MODEL=en_US-kathleen-low.onnx
-REDIS_HOST=localhost
-REDIS_PORT=6379
+VALKEY_HOST=localhost
+VALKEY_PORT=6379
 ENABLE_CACHE=true
 LOG_LEVEL=DEBUG
 ASSETS_DIR=./assets
 ```
 
-### 3. Start Redis (Development)
+### 3. Start Valkey (Development)
 
 ```bash
 # Using Docker
-docker run -d --name dev-redis -p 6379:6379 redis:7-alpine
+docker run -d --name dev-valkey -p 6379:6379 valkey/valkey:8-alpine
 
-# Or using local Redis installation
-redis-server --port 6379
+# Or using local Valkey installation
+valkey-server --port 6379
 ```
 
 ### 4. Run the API
@@ -244,10 +244,10 @@ def test_synthesize_speech_auth_failure():
    uv run python -c "import piper.download_voices; print(piper.download_voices.VOICE_ALIASES)"
    ```
 
-2. **Redis Connection Issues**:
+2. **Valkey Connection Issues**:
    ```bash
-   # Test Redis connection
-   redis-cli -h localhost -p 6379 ping
+   # Test Valkey connection
+   valkey-cli -h localhost -p 6379 ping
    ```
 
 3. **Memory Issues**:

@@ -26,14 +26,14 @@ services:
       - "8000:8000"
     environment:
       - ALLOWED_USER_TOKEN=your-secure-token-here
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - VALKEY_HOST=valkey
+      - VALKEY_PORT=6379
       - TTS_MODEL=en_US-kathleen-low.onnx
       - LOG_LEVEL=INFO
     volumes:
       - tts_models:/app/assets
     depends_on:
-      - redis
+      - valkey
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -41,18 +41,18 @@ services:
       timeout: 10s
       retries: 3
 
-  redis:
-    image: redis:7-alpine
+  valkey:
+    image: valkey/valkey:8-alpine
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - valkey_data:/data
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    command: valkey-server --appendonly yes
 
 volumes:
   tts_models:
-  redis_data:
+  valkey_data:
 ```
 
 **Start the stack**:
@@ -63,18 +63,18 @@ docker-compose up -d
 ### Standalone Docker
 
 ```bash
-# Start Redis
-docker run -d --name tts-redis \
+# Start Valkey
+docker run -d --name tts-valkey \
   -p 6379:6379 \
-  redis:7-alpine
+  valkey/valkey:8-alpine
 
 # Start TTS API
 docker run -d --name tts-api \
   -p 8000:8000 \
   -e ALLOWED_USER_TOKEN=your-secure-token \
-  -e REDIS_HOST=host.docker.internal \
+  -e VALKEY_HOST=host.docker.internal \
   -e TTS_MODEL=en_US-kathleen-low.onnx \
-  --link tts-redis:redis \
+  --link tts-valkey:valkey \
   stkr22/tts-batch-api:latest
 ```
 
@@ -103,8 +103,8 @@ metadata:
   namespace: tts-system
 data:
   TTS_MODEL: "en_US-kathleen-low.onnx"
-  REDIS_HOST: "redis-service"
-  REDIS_PORT: "6379"
+  VALKEY_HOST: "valkey-service"
+  VALKEY_PORT: "6379"
   ENABLE_CACHE: "true"
   CACHE_TTL: "604800"
   LOG_LEVEL: "INFO"
@@ -119,37 +119,37 @@ metadata:
 type: Opaque
 stringData:
   ALLOWED_USER_TOKEN: "your-secure-production-token"
-  # Optional: Redis password
-  # REDIS_PASSWORD: "redis-secure-password"
+  # Optional: Valkey password
+  # VALKEY_PASSWORD: "valkey-secure-password"
 ```
 
-### Redis Deployment
+### Valkey Deployment
 
 ```yaml
-# redis.yaml
+# valkey.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis
+  name: valkey
   namespace: tts-system
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis
+      app: valkey
   template:
     metadata:
       labels:
-        app: redis
+        app: valkey
     spec:
       containers:
-      - name: redis
-        image: redis:7-alpine
+      - name: valkey
+        image: valkey/valkey:8-alpine
         ports:
         - containerPort: 6379
-        command: ["redis-server", "--appendonly", "yes"]
+        command: ["valkey-server", "--appendonly", "yes"]
         volumeMounts:
-        - name: redis-data
+        - name: valkey-data
           mountPath: /data
         resources:
           requests:
@@ -159,19 +159,19 @@ spec:
             memory: "512Mi"
             cpu: "500m"
       volumes:
-      - name: redis-data
+      - name: valkey-data
         persistentVolumeClaim:
-          claimName: redis-pvc
+          claimName: valkey-pvc
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis-service
+  name: valkey-service
   namespace: tts-system
 spec:
   selector:
-    app: redis
+    app: valkey
   ports:
   - port: 6379
     targetPort: 6379
@@ -181,7 +181,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: redis-pvc
+  name: valkey-pvc
   namespace: tts-system
 spec:
   accessModes:
@@ -328,7 +328,7 @@ spec:
 # Apply all configurations
 kubectl apply -f namespace.yaml
 kubectl apply -f config.yaml
-kubectl apply -f redis.yaml
+kubectl apply -f valkey.yaml
 kubectl apply -f tts-api.yaml
 kubectl apply -f ingress.yaml
 
@@ -352,7 +352,7 @@ helm install tts-api stkr22/tts-batch-api \
   --namespace tts-system \
   --create-namespace \
   --set auth.token="your-secure-token" \
-  --set redis.enabled=true \
+  --set valkey.enabled=true \
   --set ingress.enabled=true \
   --set ingress.hosts[0].host="tts.yourdomain.com"
 ```
@@ -369,7 +369,7 @@ helm install tts-api stkr22/tts-batch-api \
 **Scaling Considerations**:
 - CPU-bound for synthesis (cache misses)
 - Memory-bound for voice model loading
-- I/O-bound for cache hits (Redis performance)
+- I/O-bound for cache hits (Valkey performance)
 
 ### Security Hardening
 
@@ -406,7 +406,7 @@ helm install tts-api stkr22/tts-batch-api \
      - to:
        - podSelector:
            matchLabels:
-             app: redis
+             app: valkey
    ```
 
 3. **Pod Security Standards**:
@@ -442,7 +442,7 @@ helm install tts-api stkr22/tts-batch-api \
 
 ### Backup and Recovery
 
-**Redis Cache**:
+**Valkey Cache**:
 - Periodic RDB snapshots
 - AOF (Append Only File) for durability
 - Cross-region replication for HA
@@ -474,7 +474,7 @@ spec:
               topologyKey: kubernetes.io/hostname
 ```
 
-**Redis HA**:
-- Redis Sentinel for automatic failover
-- Redis Cluster for horizontal scaling
-- Backup Redis instances in different zones
+**Valkey HA**:
+- Valkey Sentinel for automatic failover
+- Valkey Cluster for horizontal scaling
+- Backup Valkey instances in different zones

@@ -6,7 +6,7 @@ The TTS Batch API is designed as a high-performance, containerized text-to-speec
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Client App    │───▶│   TTS API       │───▶│   Redis Cache   │
+│   Client App    │───▶│   TTS API       │───▶│   Valkey Cache  │
 │                 │    │   (FastAPI)     │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                                 │
@@ -54,7 +54,7 @@ The TTS Batch API is designed as a high-performance, containerized text-to-speec
 - SHA256-based model integrity (future enhancement)
 - Support for multiple voice models (planned)
 
-### 3. Redis Caching Layer (`TTSCache` class)
+### 3. Valkey Caching Layer (`TTSCache` class)
 
 **Purpose**: High-performance audio caching to minimize synthesis compute
 
@@ -62,11 +62,11 @@ The TTS Batch API is designed as a high-performance, containerized text-to-speec
 - **Key Generation**: SHA256 hash of `voice_id:text`
 - **TTL Management**: Configurable expiration (default 7 days)
 - **Cache-First Pattern**: Always check cache before synthesis
-- **Async Operations**: Non-blocking Redis interactions
+- **Async Operations**: Non-blocking Valkey interactions
 
 **Memory Efficiency**:
 - Audio stored as compressed byte streams
-- Automatic cleanup via Redis TTL
+- Automatic cleanup via Valkey TTL
 - Connection pooling for concurrent requests
 
 ### 4. Configuration System
@@ -82,7 +82,7 @@ The TTS Batch API is designed as a high-performance, containerized text-to-speec
 1. Client sends POST to `/synthesizeSpeech`
 2. Authentication validation
 3. Cache key generation from text
-4. Redis lookup returns cached audio
+4. Valkey lookup returns cached audio
 5. Direct response with cached data
 
 ### Cache Miss - New Synthesis
@@ -90,24 +90,24 @@ The TTS Batch API is designed as a high-performance, containerized text-to-speec
 2. Authentication validation
 3. Cache key generation (cache miss)
 4. PIPER TTS synthesis with loaded model
-5. Audio data stored in Redis cache
+5. Audio data stored in Valkey cache
 6. Response with synthesized audio
 
 ## Performance Characteristics
 
 ### Latency Targets
-- **Cache Hit**: <50ms (Redis lookup + network)
+- **Cache Hit**: <50ms (Valkey lookup + network)
 - **Cache Miss**: <2s (synthesis + caching + network)
 - **Model Loading**: <10s (first request only)
 
 ### Throughput
-- **Cached Requests**: 1000+ RPS (Redis-limited)
+- **Cached Requests**: 1000+ RPS (Valkey-limited)
 - **Synthesis Requests**: 10-50 RPS (CPU-limited)
 
 ### Memory Usage
 - **Base Container**: ~200MB
 - **Voice Model**: ~50-100MB per model
-- **Redis Connection**: ~10MB
+- **Valkey Connection**: ~10MB
 
 ## Security Design
 
@@ -125,7 +125,7 @@ The TTS Batch API is designed as a high-performance, containerized text-to-speec
 
 ### Horizontal Scaling
 - Stateless application design
-- Shared Redis cache across instances
+- Shared Valkey cache across instances
 - Load balancer compatible
 
 ### Resource Constraints
