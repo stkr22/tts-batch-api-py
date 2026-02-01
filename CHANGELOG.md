@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.0.0](https://github.com/stkr22/tts-batch-api-py/compare/v5.0.1...v6.0.0) (2026-02-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* Environment variables renamed from REDIS_* to VALKEY_*
+
+### Features
+
+* :arrow_up: migrate from Redis to Valkey caching backend ([4e5055b](https://github.com/stkr22/tts-batch-api-py/commit/4e5055ba3e86f4705a05df94d831a339b88c1290))
+
+
+### Bug Fixes
+
+* update to newest copier setup and dep update ([fb69795](https://github.com/stkr22/tts-batch-api-py/commit/fb697957cb76b40003baab4a88c6c6ce0c9b841b))
+* update to newest copier setup and dep update ([e45e595](https://github.com/stkr22/tts-batch-api-py/commit/e45e5958ee5a743885b2fe88aef06cd842bbe902))
+
 ## [5.0.1](https://github.com/stkr22/tts-batch-api-py/compare/v5.0.0...v5.0.1) (2025-12-02)
 
 
