@@ -45,21 +45,21 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
     # Load voice models using configuration
     model_manager.load_models()
 
-    # Initialize cache if Redis is available and enabled
+    # Initialize cache if Valkey is available and enabled
     cache_enabled = os.getenv("ENABLE_CACHE", "true").lower() == "true"
 
     if cache_enabled:
         try:
-            # Build Redis URL with optional authentication
-            redis_pw = os.getenv("REDIS_PASSWORD")
-            redis_url = "redis://"
-            if redis_pw:
-                redis_url = f"{redis_url}:{redis_pw}@"
-            redis_url = f"{redis_url}{os.getenv('REDIS_HOST', 'localhost')}:{os.getenv('REDIS_PORT', '6379')}"
+            # Build Valkey URL with optional authentication
+            valkey_pw = os.getenv("VALKEY_PASSWORD")
+            valkey_url = "valkey://"
+            if valkey_pw:
+                valkey_url = f"{valkey_url}:{valkey_pw}@"
+            valkey_url = f"{valkey_url}{os.getenv('VALKEY_HOST', 'localhost')}:{os.getenv('VALKEY_PORT', '6379')}"
 
             # Initialize cache with environment-based configuration
             cache = TTSCache(
-                redis_url=redis_url,
+                valkey_url=valkey_url,
                 config=CacheConfig(
                     enabled=True,
                     ttl=int(os.getenv("CACHE_TTL", "604800")),
