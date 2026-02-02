@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.1](https://github.com/stkr22/tts-batch-api-py/compare/v6.0.0...v6.0.1) (2026-02-02)
+
+
+### Bug Fixes
+
+* :bug: downgrade piper-tts to 1.3.0 to resolve espeakbridge import error ([561af61](https://github.com/stkr22/tts-batch-api-py/commit/561af6190ee32ea21d40fc4159e7fb36ae4e6f4c))
+
 ## [6.0.0](https://github.com/stkr22/tts-batch-api-py/compare/v5.0.1...v6.0.0) (2026-02-01)
 
 
